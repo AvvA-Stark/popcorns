@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
+  Linking,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Colors } from '../../constants/Colors';
@@ -33,6 +34,7 @@ export default function MovieDetailScreen() {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const [trailerLoading, setTrailerLoading] = useState(true);
 
   useEffect(() => {
     loadMovieDetails();
@@ -267,7 +269,8 @@ export default function MovieDetailScreen() {
               <TouchableOpacity
                 style={styles.trailerButton}
                 onPress={() => {
-                  setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`);
+                  setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&playsinline=1`);
+                  setTrailerLoading(true);
                   setShowTrailer(true);
                 }}
                 activeOpacity={0.8}
@@ -317,7 +320,22 @@ export default function MovieDetailScreen() {
                 allowsFullscreenVideo={true}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
+                onLoadEnd={() => setTrailerLoading(false)}
+                onError={() => {
+                  console.error('Trailer embed failed, opening in YouTube app');
+                  setShowTrailer(false);
+                  setTrailerLoading(false);
+                  if (trailer) {
+                    Linking.openURL(`https://www.youtube.com/watch?v=${trailer.key}`);
+                  }
+                }}
               />
+              {trailerLoading && (
+                <View style={styles.trailerLoadingOverlay}>
+                  <ActivityIndicator size="large" color={Colors.accent} />
+                  <Text style={styles.trailerLoadingText}>Loading trailer...</Text>
+                </View>
+              )}
             </View>
           </TouchableOpacity>
         </Modal>
@@ -620,5 +638,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: Colors.text,
     fontWeight: 'bold',
+  },
+  trailerLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  trailerLoadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
 });

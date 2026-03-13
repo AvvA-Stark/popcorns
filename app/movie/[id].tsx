@@ -25,8 +25,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
 
-const slugifyProvider = (name: string): string => {
-  return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+const PROVIDER_SEARCH_URLS: Record<string, string> = {
+  'Netflix': 'https://www.netflix.com/search?q=',
+  'Amazon Prime Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
+  'Disney Plus': 'https://www.disneyplus.com/search?query=',
+  'HBO Max': 'https://www.max.com/search?query=',
+  'Apple TV Plus': 'https://tv.apple.com/search?term=',
+  'Hulu': 'https://www.hulu.com/search?q=',
+  'Peacock': 'https://www.peacocktv.com/search?q=',
+  'Paramount Plus': 'https://www.paramountplus.com/search/?q=',
+  'Apple TV': 'https://tv.apple.com/search?term=',
+  'Amazon Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
 };
 
 export default function MovieDetailScreen() {
@@ -242,17 +251,26 @@ export default function MovieDetailScreen() {
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {
                   const logoUrl = tmdb.getImageUrl(provider.logo_path, 'w92');
-                  const providerSlug = slugifyProvider(provider.provider_name);
-                  const watchUrl = `https://www.justwatch.com/bg/provider/${providerSlug}/movie/${movie.id}`;
                   
                   return (
                     <TouchableOpacity 
                       key={provider.provider_id} 
                       style={styles.providerItem}
                       onPress={() => {
-                        Linking.openURL(watchUrl).catch(err => 
-                          console.error('Failed to open provider URL:', err)
-                        );
+                        const searchUrl = PROVIDER_SEARCH_URLS[provider.provider_name];
+                        if (searchUrl) {
+                          const fullUrl = searchUrl + encodeURIComponent(movie.title);
+                          Linking.openURL(fullUrl).catch(err => 
+                            console.error('Failed to open provider URL:', err)
+                          );
+                        } else {
+                          console.warn(`No search URL configured for provider: ${provider.provider_name}`);
+                          // Fallback to JustWatch (or show alert if preferred)
+                          const fallbackUrl = `https://www.justwatch.com/search?q=${encodeURIComponent(movie.title)}`;
+                          Linking.openURL(fallbackUrl).catch(err =>
+                            console.error('Failed to open fallback URL:', err)
+                          );
+                        }
                       }}
                       activeOpacity={0.7}
                     >

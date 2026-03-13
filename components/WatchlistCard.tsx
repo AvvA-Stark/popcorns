@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: 12,
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     marginVertical: 6,
     height: CARD_HEIGHT,
     overflow: 'hidden',
@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 16,
   },
   rating: {
     fontSize: 12,

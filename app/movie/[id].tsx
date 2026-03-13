@@ -14,7 +14,7 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
-  Linking,
+  Modal,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Colors } from '../../constants/Colors';
@@ -31,6 +31,8 @@ export default function MovieDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadMovieDetails();
@@ -92,11 +94,6 @@ export default function MovieDetailScreen() {
     } catch (err) {
       console.error('Error toggling watchlist:', err);
     }
-  };
-
-  const openYouTubeVideo = (videoKey: string) => {
-    const url = `https://www.youtube.com/watch?v=${videoKey}`;
-    Linking.openURL(url);
   };
 
   if (loading) {
@@ -269,11 +266,14 @@ export default function MovieDetailScreen() {
               <Text style={styles.sectionTitle}>Trailer</Text>
               <TouchableOpacity
                 style={styles.trailerButton}
-                onPress={() => openYouTubeVideo(trailer.key)}
+                onPress={() => {
+                  setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`);
+                  setShowTrailer(true);
+                }}
                 activeOpacity={0.8}
               >
                 <Text style={styles.trailerIcon}>▶️</Text>
-                <Text style={styles.trailerButtonText}>Watch on YouTube</Text>
+                <Text style={styles.trailerButtonText}>Watch Trailer</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -290,6 +290,38 @@ export default function MovieDetailScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Trailer Modal */}
+      {showTrailer && trailerUrl && (
+        <Modal
+          visible={showTrailer}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowTrailer(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowTrailer(false)}
+          >
+            <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+              <TouchableOpacity
+                style={styles.modalClose}
+                onPress={() => setShowTrailer(false)}
+              >
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+              <WebView
+                source={{ uri: trailerUrl }}
+                style={{ flex: 1 }}
+                allowsFullscreenVideo={true}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -558,5 +590,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    height: '70%',
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  modalClose: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  modalCloseText: {
+    fontSize: 24,
+    color: Colors.text,
+    fontWeight: 'bold',
   },
 });

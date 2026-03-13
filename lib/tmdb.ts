@@ -89,6 +89,52 @@ export interface MovieDetailsComplete extends MovieDetails {
   watchProviders?: WatchProviders;
 }
 
+export interface Genre {
+  id: number;
+  name: string;
+}
+
+export interface Person {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  known_for_department: string;
+  popularity: number;
+}
+
+export interface DiscoverMoviesParams {
+  genres?: number[];
+  year?: number;
+  actor?: number;
+  provider?: number;
+  rating_gte?: number;
+  page?: number;
+}
+
+export interface DiscoverMoviesResponse {
+  results: Movie[];
+  page: number;
+  total_pages: number;
+  total_results: number;
+}
+
+// Streaming provider ID mapping
+export const PROVIDER_IDS: Record<string, number> = {
+  'Netflix': 8,
+  'Amazon Prime Video': 9,
+  'Disney Plus': 337,
+  'HBO Max': 384,
+  'Apple TV Plus': 350,
+  'Hulu': 15,
+  'Peacock': 386,
+  'Paramount Plus': 398,
+  'Crunchyroll': 283,
+  'Max': 1899,
+};
+
+// Module-level cache for genres
+let genresCache: Genre[] | null = null;
+
 class TMDBClient {
   private client: AxiosInstance;
   private imageBaseUrl: string;
@@ -188,29 +234,95 @@ class TMDBClient {
   }
 
   /**
-   * Discover movies with filters
+   * Get list of all genres (cached)
+   * Only fetches once per app session
    */
-  async discoverMovies(params: {
-    page?: number;
-    sortBy?: string;
-    withGenres?: string;
-    releaseYearMin?: number;
-    releaseYearMax?: number;
-    voteAverageMin?: number;
-  } = {}): Promise<Movie[]> {
+  async getGenres(): Promise<Genre[]> {
+    if (genresCache) {
+      return genresCache;
+    }
+
     try {
-      const response = await this.client.get('/discover/movie', {
+      const response = await this.client.get('/genre/movie/list');
+      genresCache = response.data.genres;
+      return genresCache!;
+    } catch (error) {
+      console.error('Error fetching genres:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search for people (actors, directors, etc.)
+   */
+  async searchPerson(query: string, page: number = 1): Promise<Person[]> {
+    if (!query.trim()) {
+      return [];
+    }
+
+    try {
+      const response = await this.client.get('/search/person', {
         params: {
-          page: params.page || 1,
-          sort_by: params.sortBy || 'popularity.desc',
-          with_genres: params.withGenres,
-          'primary_release_date.gte': params.releaseYearMin ? `${params.releaseYearMin}-01-01` : undefined,
-          'primary_release_date.lte': params.releaseYearMax ? `${params.releaseYearMax}-12-31` : undefined,
-          'vote_average.gte': params.voteAverageMin,
+          query,
+          page,
           include_adult: false,
         },
       });
       return response.data.results;
+    } catch (error) {
+      console.error('Error searching person:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Discover movies with comprehensive filters
+   * Supports genres, year, actor, provider, rating, and more
+   */
+  async discoverMovies(params: DiscoverMoviesParams = {}): Promise<DiscoverMoviesResponse> {
+    try {
+      const queryParams: any = {
+        page: params.page || 1,
+        sort_by: 'popularity.desc',
+        include_adult: false,
+      };
+
+      // Genre filter (comma-separated IDs)
+      if (params.genres && params.genres.length > 0) {
+        queryParams.with_genres = params.genres.join(',');
+      }
+
+      // Year filter
+      if (params.year) {
+        queryParams.primary_release_year = params.year;
+      }
+
+      // Actor filter
+      if (params.actor) {
+        queryParams.with_cast = params.actor;
+      }
+
+      // Streaming provider filter
+      if (params.provider) {
+        queryParams.with_watch_providers = params.provider;
+        queryParams.watch_region = 'US'; // Required when using with_watch_providers
+      }
+
+      // Minimum rating filter
+      if (params.rating_gte !== undefined) {
+        queryParams['vote_average.gte'] = params.rating_gte;
+      }
+
+      const response = await this.client.get('/discover/movie', {
+        params: queryParams,
+      });
+
+      return {
+        results: response.data.results,
+        page: response.data.page,
+        total_pages: response.data.total_pages,
+        total_results: response.data.total_results,
+      };
     } catch (error) {
       console.error('Error discovering movies:', error);
       throw error;

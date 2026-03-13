@@ -5,23 +5,24 @@
 
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
-import { colors } from '../constants/Colors';
+import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
 
 interface WatchlistCardProps {
-  movie: {
+  item: {
     id: number;
     title: string;
-    overview: string;
-    poster_path: string;
-    vote_average: number;
-    addedAt: string;
+    overview?: string;
+    posterPath?: string | null;
+    releaseDate?: string;
+    voteAverage?: number;
+    addedAt: number;
     priority?: 'normal' | 'super';
   };
-  onDelete: (id: number) => void;
+  onRemove: (id: number) => void;
 }
 
-export default function WatchlistCard({ movie, onDelete }: WatchlistCardProps) {
+export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => {

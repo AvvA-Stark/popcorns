@@ -3,7 +3,7 @@
  * Displays a movie in the user's watchlist with delete option
  */
 
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
@@ -43,15 +43,23 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
     <Animated.View style={[styles.card, animatedStyle]}>
       <View style={styles.content}>
         <View style={styles.posterContainer}>
-          <Text style={styles.posterPlaceholder}>🎬</Text>
+          {movie.posterPath ? (
+            <Image
+              source={{ uri: `https://image.tmdb.org/t/p/w200${movie.posterPath}` }}
+              style={styles.poster}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.posterPlaceholder}>🎬</Text>
+          )}
         </View>
         <View style={styles.info}>
           <Text style={styles.title} numberOfLines={1}>{movie.title}</Text>
           <View style={styles.metaRow}>
-            <Text style={styles.year}>{new Date(movie.release_date || '').getFullYear()}</Text>
+            <Text style={styles.year}>{new Date(movie.releaseDate || '').getFullYear()}</Text>
             <View style={styles.ratingContainer}>
               <FontAwesome name="star" size={12} color="#FFD700" />
-              <Text style={styles.rating}>{movie.vote_average?.toFixed(1)}</Text>
+              <Text style={styles.rating}>{movie.voteAverage?.toFixed(1)}</Text>
             </View>
           </View>
           <Text style={styles.overview} numberOfLines={2}>
@@ -112,6 +120,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  poster: {
+    width: '100%',
+    height: '100%',
   },
   posterPlaceholder: {
     fontSize: 32,

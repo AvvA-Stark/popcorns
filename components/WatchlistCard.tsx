@@ -3,8 +3,9 @@
  * Displays a movie in the user's watchlist with delete option
  */
 
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
 import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -23,6 +24,7 @@ interface WatchlistCardProps {
 }
 
 export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
+  const router = useRouter();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -39,9 +41,18 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
     scale.value = withSpring(1);
   };
 
+  const handleCardPress = () => {
+    router.push(`/movie/${movie.id}`);
+  };
+
   return (
     <Animated.View style={[styles.card, animatedStyle]}>
-      <View style={styles.content}>
+      <Pressable 
+        style={styles.content}
+        onPress={handleCardPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
         <View style={styles.posterContainer}>
           {movie.posterPath ? (
             <Image
@@ -78,14 +89,15 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
         </View>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => onDelete(movie.id)}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onDelete(movie.id);
+          }}
           activeOpacity={0.7}
         >
           <FontAwesome name="trash" size={20} color={colors.error} />
         </TouchableOpacity>
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }

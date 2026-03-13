@@ -90,7 +90,6 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
   );
 }
 
-const CARD_HEIGHT = 180;
 const POSTER_SIZE = 100;
 
 const styles = StyleSheet.create({
@@ -99,7 +98,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginHorizontal: 20,
     marginVertical: 6,
-    height: CARD_HEIGHT,
     overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
@@ -108,9 +106,8 @@ const styles = StyleSheet.create({
     shadowRadius: 1.5,
   },
   content: {
-    flex: 1,
     flexDirection: 'row',
-    padding: 12,
+    padding: 16,
   },
   posterContainer: {
     width: POSTER_SIZE,
@@ -142,7 +139,8 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginTop: 8,
+    marginBottom: 8,
   },
   year: {
     fontSize: 12,
@@ -152,7 +150,6 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
   },
   rating: {
     fontSize: 12,

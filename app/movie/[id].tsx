@@ -25,6 +25,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
 
+const slugifyProvider = (name: string): string => {
+  return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+};
+
 export default function MovieDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -238,8 +242,20 @@ export default function MovieDetailScreen() {
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {
                   const logoUrl = tmdb.getImageUrl(provider.logo_path, 'w92');
+                  const providerSlug = slugifyProvider(provider.provider_name);
+                  const watchUrl = `https://www.justwatch.com/bg/provider/${providerSlug}/movie/${movie.id}`;
+                  
                   return (
-                    <View key={provider.provider_id} style={styles.providerItem}>
+                    <TouchableOpacity 
+                      key={provider.provider_id} 
+                      style={styles.providerItem}
+                      onPress={() => {
+                        Linking.openURL(watchUrl).catch(err => 
+                          console.error('Failed to open provider URL:', err)
+                        );
+                      }}
+                      activeOpacity={0.7}
+                    >
                       {logoUrl ? (
                         <Image
                           source={{ uri: logoUrl }}
@@ -253,7 +269,7 @@ export default function MovieDetailScreen() {
                       <Text style={styles.providerName} numberOfLines={1}>
                         {provider.provider_name}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
               </View>

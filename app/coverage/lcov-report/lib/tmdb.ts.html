@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">5.62% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/160</span>
+                <span class='fraction'>9/160</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">1.63% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/61</span>
+                <span class='fraction'>1/61</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">12% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/25</span>
+                <span class='fraction'>3/25</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">5.76% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/156</span>
+                <span class='fraction'>9/156</span>
             </div>
         
             
@@ -752,7 +752,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -767,36 +767,36 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1191,7 +1191,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * TMDB API Client
@@ -1317,7 +1317,7 @@ export interface DiscoverMoviesResponse {
 }
 &nbsp;
 // Streaming provider ID mapping
-export const PROVIDER_IDS: Record&lt;string, number&gt; = <span class="cstat-no" title="statement not covered" >{</span>
+export const PROVIDER_IDS: Record&lt;string, number&gt; = {
   'Netflix': 8,
   'Amazon Prime Video': 9,
   'Disney Plus': 337,
@@ -1332,36 +1332,36 @@ export const PROVIDER_IDS: Record&lt;string, number&gt; = <span class="cstat-no"
 };
 &nbsp;
 // Module-level cache for genres
-let genresCache: Genre[] | null = <span class="cstat-no" title="statement not covered" >null;</span>
+let genresCache: Genre[] | null = null;
 &nbsp;
 class TMDBClient {
   private client: AxiosInstance;
   private imageBaseUrl: string;
 &nbsp;
-<span class="fstat-no" title="function not covered" >  co</span>nstructor() {
-<span class="cstat-no" title="statement not covered" >    this.client = axios.create({</span>
+  constructor() {
+    this.client = axios.create({
       baseURL: Config.tmdb.baseUrl,
       params: {
         api_key: Config.tmdb.apiKey,
       },
     });
-<span class="cstat-no" title="statement not covered" >    this.imageBaseUrl = Config.tmdb.imageBaseUrl;</span>
+    this.imageBaseUrl = Config.tmdb.imageBaseUrl;
   }
 &nbsp;
   /**
    * Get full image URL from path
    */
-<span class="fstat-no" title="function not covered" >  ge</span>tImageUrl(path: string | null, size: string = <span class="branch-0 cbranch-no" title="branch not covered" >'w500')</span>: string | null {
-<span class="cstat-no" title="statement not covered" >    if (!path) <span class="cstat-no" title="statement not covered" >return null;</span></span>
-<span class="cstat-no" title="statement not covered" >    return `${this.imageBaseUrl}/${size}${path}`;</span>
+  getImageUrl(path: string | null, size: string = <span class="branch-0 cbranch-no" title="branch not covered" >'w500')</span>: string | null {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!path) <span class="cstat-no" title="statement not covered" >return null;</span>
+    return `${this.imageBaseUrl}/${size}${path}`;
   }
 &nbsp;
   /**
    * Get poster URL
    */
-<span class="fstat-no" title="function not covered" >  ge</span>tPosterUrl(path: string | null, size: keyof typeof Config.tmdb.posterSizes = <span class="branch-0 cbranch-no" title="branch not covered" >'medium')</span>: string | null {
-    const sizeString = <span class="cstat-no" title="statement not covered" >Config.tmdb.posterSizes[size];</span>
-<span class="cstat-no" title="statement not covered" >    return this.getImageUrl(path, sizeString);</span>
+  getPosterUrl(path: string | null, size: keyof typeof Config.tmdb.posterSizes = <span class="branch-0 cbranch-no" title="branch not covered" >'medium')</span>: string | null {
+    const sizeString = Config.tmdb.posterSizes[size];
+    return this.getImageUrl(path, sizeString);
   }
 &nbsp;
   /**
@@ -1756,7 +1756,7 @@ class TMDBClient {
 }
 &nbsp;
 // Export singleton instance
-export const tmdb = <span class="cstat-no" title="statement not covered" >new TMDBClient();</span>
+export const tmdb = new TMDBClient();
 export default tmdb;
 &nbsp;</pre></td></tr></table></pre>
 
@@ -1765,7 +1765,7 @@ export default tmdb;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-15T19:17:32.702Z
+                at 2026-03-15T19:18:41.271Z
             </div>
         <script src="../prettify.js"></script>
         <script>

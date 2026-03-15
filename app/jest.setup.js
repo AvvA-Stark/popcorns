@@ -14,6 +14,37 @@ if (typeof global.structuredClone === 'undefined') {
   global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+  const React = require('react');
+  
+  return {
+    __esModule: true,
+    default: {
+      createAnimatedComponent: (Component) => Component,
+      View: 'Animated.View',
+      Text: 'Animated.Text',
+      ScrollView: 'Animated.ScrollView',
+      Image: 'Animated.Image',
+    },
+    useSharedValue: (val) => ({ value: val }),
+    useAnimatedStyle: (cb) => cb(),
+    withTiming: (val) => val,
+    withSpring: (val) => val,
+    withSequence: (...args) => args[args.length - 1],
+    withDelay: (_, val) => val,
+    withRepeat: (val) => val,
+    runOnJS: (fn) => fn,
+    Easing: {
+      linear: (x) => x,
+      ease: (x) => x,
+      quad: (x) => x,
+      cubic: (x) => x,
+      bezier: () => (x) => x,
+    },
+  };
+});
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,

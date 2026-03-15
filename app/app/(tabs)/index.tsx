@@ -26,6 +26,7 @@ import { addToWatchlist } from '../../lib/watchlist';
 import SkeletonCard from '../../components/SkeletonCard';
 import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
+import RangeSlider from '../../components/RangeSlider';
 
 interface Filters {
   genres: number[];
@@ -596,48 +597,30 @@ export default function DiscoveryScreen() {
               {/* Year Range */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>
-                  Year Range: {tempFilters.yearFrom || 1900} — {tempFilters.yearTo || new Date().getFullYear()}
+                  Year: {tempFilters.yearFrom || 1900} — {tempFilters.yearTo || new Date().getFullYear()}
                 </Text>
-                <View style={styles.yearRangeContainer}>
-                  <View style={styles.yearSliderContainer}>
-                    <Text style={styles.yearSliderLabel}>From</Text>
-                    <Slider
-                      style={styles.slider}
-                      minimumValue={1900}
-                      maximumValue={new Date().getFullYear()}
-                      step={1}
-                      value={tempFilters.yearFrom || 1900}
-                      onValueChange={(value) =>
-                        setTempFilters((prev) => ({
-                          ...prev,
-                          yearFrom: value > 1900 ? value : undefined,
-                        }))
-                      }
-                      minimumTrackTintColor={Colors.primary}
-                      maximumTrackTintColor={'#333333'}
-                      thumbTintColor={Colors.primary}
-                    />
-                  </View>
-                  <View style={styles.yearSliderContainer}>
-                    <Text style={styles.yearSliderLabel}>To</Text>
-                    <Slider
-                      style={styles.slider}
-                      minimumValue={1900}
-                      maximumValue={new Date().getFullYear()}
-                      step={1}
-                      value={tempFilters.yearTo || new Date().getFullYear()}
-                      onValueChange={(value) =>
-                        setTempFilters((prev) => ({
-                          ...prev,
-                          yearTo: value < new Date().getFullYear() ? value : undefined,
-                        }))
-                      }
-                      minimumTrackTintColor={Colors.primary}
-                      maximumTrackTintColor={'#333333'}
-                      thumbTintColor={Colors.primary}
-                    />
-                  </View>
-                </View>
+                <RangeSlider
+                  minValue={1900}
+                  maxValue={new Date().getFullYear()}
+                  fromValue={tempFilters.yearFrom || 1900}
+                  toValue={tempFilters.yearTo || new Date().getFullYear()}
+                  step={1}
+                  onFromChange={(value) =>
+                    setTempFilters((prev) => ({
+                      ...prev,
+                      yearFrom: value > 1900 ? value : undefined,
+                    }))
+                  }
+                  onToChange={(value) =>
+                    setTempFilters((prev) => ({
+                      ...prev,
+                      yearTo: value < new Date().getFullYear() ? value : undefined,
+                    }))
+                  }
+                  minimumTrackTintColor={Colors.primary}
+                  maximumTrackTintColor="#333333"
+                  thumbTintColor={Colors.primary}
+                />
               </View>
 
               {/* Actor */}
@@ -729,27 +712,57 @@ export default function DiscoveryScreen() {
               {/* Available in Region */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>Availability</Text>
-                <TouchableOpacity
-                  style={[
-                    styles.regionToggle,
-                    tempFilters.availableInRegion && styles.regionToggleActive,
-                  ]}
-                  onPress={() =>
-                    setTempFilters((prev) => ({
-                      ...prev,
-                      availableInRegion: !prev.availableInRegion,
-                    }))
-                  }
-                >
-                  <Text
+                <View style={styles.radioGroup}>
+                  <TouchableOpacity
                     style={[
-                      styles.regionToggleText,
-                      tempFilters.availableInRegion && styles.regionToggleTextActive,
+                      styles.radioOption,
+                      !tempFilters.availableInRegion && styles.radioOptionSelected,
                     ]}
+                    onPress={() =>
+                      setTempFilters((prev) => ({
+                        ...prev,
+                        availableInRegion: false,
+                      }))
+                    }
                   >
-                    {tempFilters.availableInRegion ? '✓ ' : ''}Available in {regionName}
-                  </Text>
-                </TouchableOpacity>
+                    <View style={styles.radioButton}>
+                      {!tempFilters.availableInRegion && <View style={styles.radioButtonInner} />}
+                    </View>
+                    <Text
+                      style={[
+                        styles.radioText,
+                        !tempFilters.availableInRegion && styles.radioTextSelected,
+                      ]}
+                    >
+                      All movies
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.radioOption,
+                      tempFilters.availableInRegion && styles.radioOptionSelected,
+                    ]}
+                    onPress={() =>
+                      setTempFilters((prev) => ({
+                        ...prev,
+                        availableInRegion: true,
+                      }))
+                    }
+                  >
+                    <View style={styles.radioButton}>
+                      {tempFilters.availableInRegion && <View style={styles.radioButtonInner} />}
+                    </View>
+                    <Text
+                      style={[
+                        styles.radioText,
+                        tempFilters.availableInRegion && styles.radioTextSelected,
+                      ]}
+                    >
+                      Available in {regionName}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </ScrollView>
 
@@ -999,35 +1012,46 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
-  yearRangeContainer: {
-    gap: 16,
+  radioGroup: {
+    gap: 12,
   },
-  yearSliderContainer: {
-    gap: 4,
-  },
-  yearSliderLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  regionToggle: {
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#333333',
+    gap: 12,
   },
-  regionToggleActive: {
-    backgroundColor: Colors.primary + '20',
+  radioOptionSelected: {
+    backgroundColor: Colors.primary + '15',
     borderColor: Colors.primary,
   },
-  regionToggleText: {
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: Colors.textSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioButtonInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.primary,
+  },
+  radioText: {
     fontSize: 16,
     color: Colors.textSecondary,
     fontWeight: '500',
+    flex: 1,
   },
-  regionToggleTextActive: {
+  radioTextSelected: {
     color: Colors.primary,
     fontWeight: '600',
   },

@@ -93,6 +93,9 @@ export default function MovieDetailScreen() {
   // Similar Movies state
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [similarMoviesLoading, setSimilarMoviesLoading] = useState(false);
+  
+  // Region debug modal
+  const [showRegionDebug, setShowRegionDebug] = useState(false);
 
   useEffect(() => {
     loadMovieDetails();
@@ -106,6 +109,7 @@ export default function MovieDetailScreen() {
       setLoading(true);
       setError(null);
       const region = getRegion();
+      setShowRegionDebug(true); // Show region debug modal
       const details = await tmdb.getMovieDetailsComplete(Number(id), region);
       setMovie(details);
     } catch (err) {
@@ -654,6 +658,30 @@ export default function MovieDetailScreen() {
           </TouchableOpacity>
         </Modal>
       )}
+
+      {/* Region Debug Modal */}
+      <Modal
+        visible={showRegionDebug}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRegionDebug(false)}
+      >
+        <View style={styles.regionDebugOverlay}>
+          <View style={styles.regionDebugContent}>
+            <Text style={styles.regionDebugTitle}>Region Debug</Text>
+            <Text style={styles.regionDebugText}>
+              Detected region: {userRegion}
+            </Text>
+            <TouchableOpacity
+              style={styles.regionDebugButton}
+              onPress={() => setShowRegionDebug(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.regionDebugButtonText}>Dismiss</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1165,5 +1193,46 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: 16,
+  },
+  // Region Debug Modal styles
+  regionDebugOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  regionDebugContent: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+    maxWidth: 320,
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 2,
+    borderColor: Colors.accent,
+  },
+  regionDebugTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  regionDebugText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  regionDebugButton: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  regionDebugButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.background,
   },
 });

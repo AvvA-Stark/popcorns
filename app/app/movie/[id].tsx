@@ -425,7 +425,7 @@ export default function MovieDetailScreen() {
           {/* Streaming Providers */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Where to Watch</Text>
-            <Text style={styles.regionIndicator}>in {regionName}</Text>
+            <Text style={styles.regionIndicator}>in {regionName} ({userRegion})</Text>
             {streamingServices.length > 0 ? (
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {

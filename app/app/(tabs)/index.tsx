@@ -158,7 +158,8 @@ export default function DiscoveryScreen() {
           page,
           region, // Pass region from context for provider filtering
         });
-        moviesData = response.results;
+        // Filter out movies without posters in Discovery
+        moviesData = response.results.filter(movie => movie.poster_path);
         setHasMore(page < response.total_pages && response.total_pages > 0);
       } else {
         // Random mode - no filters (limit to last 40 years)
@@ -168,7 +169,8 @@ export default function DiscoveryScreen() {
           page: pageToUse,
           year_gte: currentYear - 40
         });
-        moviesData = response.results;
+        // Filter out movies without posters in Discovery
+        moviesData = response.results.filter(movie => movie.poster_path);
         setHasMore(true); // Always has more in random mode
       }
 

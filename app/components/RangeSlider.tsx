@@ -37,26 +37,31 @@ export default function RangeSlider({
   const [activeThumb, setActiveThumb] = useState<'from' | 'to' | null>(null);
 
   const handleFromChange = (value: number) => {
+    console.log('📍 FROM thumb moved:', value);
     // Ensure 'from' doesn't exceed 'to'
     const clampedValue = Math.min(value, toValue);
     onFromChange(clampedValue);
   };
 
   const handleToChange = (value: number) => {
+    console.log('📍 TO thumb moved:', value);
     // Ensure 'to' doesn't go below 'from'
     const clampedValue = Math.max(value, fromValue);
     onToChange(clampedValue);
   };
 
   const handleFromStart = () => {
+    console.log('🎯 FROM thumb grab started');
     setActiveThumb('from');
   };
 
   const handleToStart = () => {
+    console.log('🎯 TO thumb grab started');
     setActiveThumb('to');
   };
 
   const handleEnd = () => {
+    console.log('🎯 Thumb released');
     setActiveThumb(null);
   };
 
@@ -83,7 +88,7 @@ export default function RangeSlider({
 
         {/* 'From' slider - z-index increases when dragging */}
         <Slider
-          style={[styles.slider, { zIndex: fromZIndex }]}
+          style={[styles.slider, { zIndex: fromZIndex, pointerEvents: activeThumb === 'to' ? 'none' : 'auto' }]}
           minimumValue={minValue}
           maximumValue={maxValue}
           step={step}
@@ -98,7 +103,7 @@ export default function RangeSlider({
 
         {/* 'To' slider - z-index increases when dragging */}
         <Slider
-          style={[styles.slider, { zIndex: toZIndex }]}
+          style={[styles.slider, { zIndex: toZIndex, pointerEvents: activeThumb === 'from' ? 'none' : 'auto' }]}
           minimumValue={minValue}
           maximumValue={maxValue}
           step={step}
@@ -127,7 +132,7 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: 'relative',
-    height: 40,
+    height: 50,
     justifyContent: 'center',
   },
   trackOverlay: {
@@ -146,7 +151,7 @@ const styles = StyleSheet.create({
   slider: {
     position: 'absolute',
     width: '100%',
-    height: 40,
+    height: 50,
   },
   labelsContainer: {
     flexDirection: 'row',

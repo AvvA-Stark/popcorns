@@ -180,13 +180,17 @@ export default function DiscoveryScreen() {
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
-          // Debug: log first movie's watch providers structure
+          // Debug: log first 3 movies' watch providers structure
           if (moviesData.length > 0) {
-            const firstMovie = moviesData[0] as any;
-            console.log('🔍 Debug - First movie watchProviders:', JSON.stringify(firstMovie.watchProviders, null, 2));
-            console.log(`🔍 Debug - Checking region: ${region}`);
+            console.log(`🔍 Debug - Checking region: ${region} (${regionName})`);
+            console.log(`🔍 Debug - Total movies before filter: ${moviesData.length}`);
+            moviesData.slice(0, 3).forEach((movie: any, index: number) => {
+              console.log(`\n🔍 Movie ${index + 1}: ${movie.title}`);
+              console.log('   watchProviders:', JSON.stringify(movie.watchProviders, null, 2));
+            });
           }
           
+          const beforeCount = moviesData.length;
           moviesData = moviesData.filter((movie: any) => {
             // Check all possible paths for watch providers
             const providersResults = movie.watchProviders?.results?.[region];
@@ -196,17 +200,26 @@ export default function DiscoveryScreen() {
             const providers = providersResults || providersDirect || providersAlt;
             
             // A movie is available if it has any provider type (flatrate, rent, or buy)
-            if (!providers) return false;
+            if (!providers) {
+              console.log(`   ❌ ${movie.title}: No providers found for ${region}`);
+              return false;
+            }
             
             const hasProviders = 
               (providers.flatrate && providers.flatrate.length > 0) ||
               (providers.rent && providers.rent.length > 0) ||
               (providers.buy && providers.buy.length > 0);
             
+            if (hasProviders) {
+              console.log(`   ✅ ${movie.title}: Available (${providers.flatrate?.length || 0} stream, ${providers.rent?.length || 0} rent, ${providers.buy?.length || 0} buy)`);
+            } else {
+              console.log(`   ❌ ${movie.title}: No streaming options in ${region}`);
+            }
+            
             return hasProviders;
           });
           
-          console.log(`✅ After region filter: ${moviesData.length} movies available in ${region}`);
+          console.log(`\n✅ After region filter: ${moviesData.length}/${beforeCount} movies available in ${region}`);
         }
         
         setHasMore(page < response.total_pages && response.total_pages > 0);
@@ -793,14 +806,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 8,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
   },
   title: {
     fontSize: 32,
@@ -825,7 +838,6 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   filterPillsContent: {
-    paddingHorizontal: 20,
     gap: 8,
   },
   filterPill: {

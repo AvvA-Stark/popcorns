@@ -48,6 +48,31 @@ const PROVIDER_SEARCH_URLS: Record<string, string> = {
   'Amazon Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
 };
 
+// Map region codes to full country names
+const getRegionName = (regionCode: string): string => {
+  const regionMap: Record<string, string> = {
+    'BG': 'Bulgaria',
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'DE': 'Germany',
+    'FR': 'France',
+    'ES': 'Spain',
+    'IT': 'Italy',
+    'NL': 'Netherlands',
+    'PL': 'Poland',
+    'RO': 'Romania',
+    'CA': 'Canada',
+    'AU': 'Australia',
+    'JP': 'Japan',
+    'KR': 'South Korea',
+    'IN': 'India',
+    'BR': 'Brazil',
+    'MX': 'Mexico',
+  };
+  
+  return regionMap[regionCode] || regionCode;
+};
+
 export default function MovieDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -241,6 +266,7 @@ export default function MovieDetailScreen() {
   
   // Get streaming providers (use detected region, fallback to first available)
   const userRegion = getRegion();
+  const regionName = getRegionName(userRegion);
   const providers = movie.watchProviders?.[userRegion] || Object.values(movie.watchProviders || {})[0];
   const streamingServices = providers?.flatrate || [];
 
@@ -399,6 +425,7 @@ export default function MovieDetailScreen() {
           {/* Streaming Providers */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Where to Watch</Text>
+            <Text style={styles.regionIndicator}>in {regionName}</Text>
             {streamingServices.length > 0 ? (
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {
@@ -790,6 +817,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 16,
+  },
+  regionIndicator: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: -12,
+    marginBottom: 12,
   },
   overview: {
     fontSize: 15,

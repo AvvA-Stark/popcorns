@@ -23,9 +23,9 @@ import { Colors } from '../../constants/Colors';
 import { tmdb, Movie, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
 import SwipeStack from '../../components/SwipeStack';
 import { addToWatchlist } from '../../lib/watchlist';
-import { getRegion } from '../../lib/region';
 import SkeletonCard from '../../components/SkeletonCard';
 import { useToast } from '../../lib/toast';
+import { useRegion } from '../../context/RegionContext';
 
 interface Filters {
   genres: number[];
@@ -39,6 +39,7 @@ interface Filters {
 
 export default function DiscoveryScreen() {
   const { showToast } = useToast();
+  const { region } = useRegion();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -147,8 +148,7 @@ export default function DiscoveryScreen() {
       let moviesData;
 
       if (hasActiveFilters()) {
-        // Use filters
-        const region = await getRegion();
+        // Use filters (region from context)
         const response = await tmdb.discoverMovies({
           genres: filters.genres.length > 0 ? filters.genres : undefined,
           year: filters.year,
@@ -156,7 +156,7 @@ export default function DiscoveryScreen() {
           provider: filters.provider,
           rating_gte: filters.ratingGte,
           page,
-          region, // Pass detected region for provider filtering
+          region, // Pass region from context for provider filtering
         });
         moviesData = response.results;
         setHasMore(page < response.total_pages && response.total_pages > 0);

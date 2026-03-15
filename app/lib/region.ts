@@ -50,16 +50,14 @@ export async function getRegion(): Promise<string> {
       }
     }
     
-    // Third try: IP-based geolocation via ipapi.co
-    console.log('[Region Detection] Path 3: Attempting IP-based detection via ipapi.co...');
+    // Third try: IP-based geolocation via api.country.is (faster, no API key)
+    console.log('[Region Detection] Path 3: Attempting IP-based detection via api.country.is...');
     try {
-      const response = await fetch('https://ipapi.co/json/', {
-        headers: { 'User-Agent': 'Popcorns-App/1.0' }
-      });
+      const response = await fetch('https://api.country.is');
       
       if (response.ok) {
         const data = await response.json();
-        const countryCode = data.country_code;
+        const countryCode = data.country;
         
         if (countryCode && typeof countryCode === 'string' && countryCode.length === 2) {
           const ipRegion = countryCode.toUpperCase();
@@ -67,7 +65,7 @@ export async function getRegion(): Promise<string> {
           cachedRegion = ipRegion;
           return ipRegion;
         } else {
-          console.warn('[Region Detection] Path 3: IP API returned invalid country_code:', countryCode);
+          console.warn('[Region Detection] Path 3: IP API returned invalid country:', countryCode);
         }
       } else {
         console.warn('[Region Detection] Path 3: IP API request failed with status:', response.status);

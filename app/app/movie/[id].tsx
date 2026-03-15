@@ -23,7 +23,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
 import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getRegion } from '../../lib/region';
+import { useRegion } from '../../context/RegionContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -48,34 +48,10 @@ const PROVIDER_SEARCH_URLS: Record<string, string> = {
   'Amazon Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
 };
 
-// Map region codes to full country names
-const getRegionName = (regionCode: string): string => {
-  const regionMap: Record<string, string> = {
-    'BG': 'Bulgaria',
-    'US': 'United States',
-    'GB': 'United Kingdom',
-    'DE': 'Germany',
-    'FR': 'France',
-    'ES': 'Spain',
-    'IT': 'Italy',
-    'NL': 'Netherlands',
-    'PL': 'Poland',
-    'RO': 'Romania',
-    'CA': 'Canada',
-    'AU': 'Australia',
-    'JP': 'Japan',
-    'KR': 'South Korea',
-    'IN': 'India',
-    'BR': 'Brazil',
-    'MX': 'Mexico',
-  };
-  
-  return regionMap[regionCode] || regionCode;
-};
-
 export default function MovieDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { region, regionName } = useRegion();
   const [movie, setMovie] = useState<MovieDetailsComplete | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,10 +69,6 @@ export default function MovieDetailScreen() {
   // Similar Movies state
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [similarMoviesLoading, setSimilarMoviesLoading] = useState(false);
-  
-  // Region state
-  const [userRegion, setUserRegion] = useState('US');
-  const [regionName, setRegionName] = useState('United States');
 
   useEffect(() => {
     loadMovieDetails();
@@ -109,9 +81,7 @@ export default function MovieDetailScreen() {
     try {
       setLoading(true);
       setError(null);
-      const region = await getRegion();
-      setUserRegion(region);
-      setRegionName(getRegionName(region));
+      // Use region from context (already detected on app start)
       const details = await tmdb.getMovieDetailsComplete(Number(id), region);
       setMovie(details);
     } catch (err) {
@@ -269,7 +239,7 @@ export default function MovieDetailScreen() {
   
   const trailer = movie.videos ? tmdb.getYouTubeTrailer(movie.videos) : null;
   const topCast = movie.credits?.cast.slice(0, 10) || [];
-  const providers = movie.watchProviders?.[userRegion] || Object.values(movie.watchProviders || {})[0];
+  const providers = movie.watchProviders?.[region] || Object.values(movie.watchProviders || {})[0];
   const streamingServices = providers?.flatrate || [];
 
   return (
@@ -430,7 +400,7 @@ export default function MovieDetailScreen() {
           {/* Streaming Providers */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Where to Watch</Text>
-            <Text style={styles.regionIndicator}>in {regionName} ({userRegion})</Text>
+            <Text style={styles.regionIndicator}>in {regionName} ({region})</Text>
             {streamingServices.length > 0 ? (
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {

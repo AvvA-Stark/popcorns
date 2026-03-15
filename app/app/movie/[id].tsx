@@ -549,9 +549,22 @@ export default function MovieDetailScreen() {
                 ))}
               </View>
             ) : (
-              <Text style={styles.noReviews}>
-                No reviews yet. Be the first to review this movie!
-              </Text>
+              <View style={styles.noReviewsContainer}>
+                <Text style={styles.noReviewsIcon}>📝</Text>
+                <Text style={styles.noReviews}>
+                  No reviews yet
+                </Text>
+                <Text style={styles.noReviewsSubtext}>
+                  Share your thoughts and be the first to review!
+                </Text>
+                <TouchableOpacity
+                  style={styles.firstReviewButton}
+                  onPress={() => setShowReviewForm(true)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.firstReviewButtonText}>✍️ Write First Review</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
 
@@ -1038,12 +1051,38 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 20,
   },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  noReviewsIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
   noReviews: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  noReviewsSubtext: {
     fontSize: 14,
     color: Colors.textTertiary,
-    fontStyle: 'italic',
     textAlign: 'center',
-    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  firstReviewButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  firstReviewButtonText: {
+    color: Colors.background,
+    fontSize: 14,
+    fontWeight: '600',
   },
   // Similar Movies styles
   similarMoviesLoading: {

@@ -140,21 +140,27 @@ export default function SearchScreen() {
 
         {!loading && !hasSearched && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyText}>Search for any movie...</Text>
+            <Text style={styles.emptyIcon}>🔎</Text>
+            <Text style={styles.emptyText}>Discover your next favorite movie</Text>
             <Text style={styles.emptySubtext}>
-              Type a movie title to start searching
+              Search by title, actor, or director
             </Text>
+            <View style={styles.searchHintContainer}>
+              <Text style={styles.searchHint}>💡 Try "Inception" or "Tom Hanks"</Text>
+            </View>
           </View>
         )}
 
         {!loading && hasSearched && results.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🎬</Text>
-            <Text style={styles.emptyText}>No movies found for "{query}"</Text>
+            <Text style={styles.emptyIcon}>😕</Text>
+            <Text style={styles.emptyText}>No movies found</Text>
             <Text style={styles.emptySubtext}>
-              Try a different search term
+              We couldn't find any movies matching "{query}"
             </Text>
+            <View style={styles.searchHintContainer}>
+              <Text style={styles.searchHint}>💡 Check spelling or try a different title</Text>
+            </View>
           </View>
         )}
 
@@ -243,6 +249,20 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     textAlign: 'center',
     paddingHorizontal: 40,
+    marginBottom: 16,
+  },
+  searchHintContainer: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+  },
+  searchHint: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   resultsContainer: {
     flex: 1,

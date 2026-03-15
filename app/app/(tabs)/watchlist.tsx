@@ -111,11 +111,21 @@ export default function WatchlistScreen() {
           </View>
 
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🎬</Text>
-            <Text style={styles.emptyText}>No movies in your watchlist yet</Text>
+            <Text style={styles.emptyIcon}>🍿</Text>
+            <Text style={styles.emptyText}>Your watchlist is empty</Text>
             <Text style={styles.emptySubtext}>
-              Swipe right or up on movies to add them here
+              Start discovering movies and swipe right to add them here
             </Text>
+            <View style={styles.emptyHintRow}>
+              <View style={styles.emptyHint}>
+                <Text style={styles.emptyHintIcon}>👉</Text>
+                <Text style={styles.emptyHintText}>Like</Text>
+              </View>
+              <View style={styles.emptyHint}>
+                <Text style={styles.emptyHintIcon}>👆</Text>
+                <Text style={styles.emptyHintText}>Super Like</Text>
+              </View>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -231,6 +241,24 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     textAlign: 'center',
     paddingHorizontal: 40,
+    marginBottom: 24,
+  },
+  emptyHintRow: {
+    flexDirection: 'row',
+    gap: 32,
+    marginTop: 8,
+  },
+  emptyHint: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptyHintIcon: {
+    fontSize: 32,
+  },
+  emptyHintText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   footer: {
     alignItems: 'center',

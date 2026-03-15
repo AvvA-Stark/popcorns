@@ -105,6 +105,7 @@ export interface Person {
 export interface DiscoverMoviesParams {
   genres?: number[];
   year?: number;
+  year_gte?: number;
   actor?: number;
   provider?: number;
   rating_gte?: number;
@@ -296,6 +297,11 @@ class TMDBClient {
       // Year filter
       if (params.year) {
         queryParams.primary_release_year = params.year;
+      }
+
+      // Minimum year filter (e.g., for limiting to recent movies)
+      if (params.year_gte) {
+        queryParams['primary_release_date.gte'] = `${params.year_gte}-01-01`;
       }
 
       // Actor filter

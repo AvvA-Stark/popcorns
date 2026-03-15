@@ -155,9 +155,13 @@ export default function DiscoveryScreen() {
         moviesData = response.results;
         setHasMore(page < response.total_pages && response.total_pages > 0);
       } else {
-        // Random mode - no filters
+        // Random mode - no filters (limit to last 40 years)
         const pageToUse = randomPageOverride !== undefined ? randomPageOverride : randomPage;
-        const response = await tmdb.discoverMovies({ page: pageToUse });
+        const currentYear = new Date().getFullYear();
+        const response = await tmdb.discoverMovies({ 
+          page: pageToUse,
+          year_gte: currentYear - 40
+        });
         moviesData = response.results;
         setHasMore(true); // Always has more in random mode
       }

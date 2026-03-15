@@ -75,8 +75,8 @@ export default function SwipeStack({
       const isSwipedUp = translateY.value < SUPER_LIKE_THRESHOLD && Math.abs(translateX.value) < SWIPE_THRESHOLD;
 
       if (isSwipedUp) {
-        // Medium haptic on swipe completion
-        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+        // Heavy haptic for super like (stronger feedback)
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Heavy);
         translateY.value = withTiming(-SCREEN_HEIGHT, { duration: 300 });
         translateX.value = withTiming(0, { duration: 300 }, () => {
           runOnJS(handleSwipeComplete)('up');

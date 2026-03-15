@@ -10,7 +10,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
@@ -18,6 +17,7 @@ import {
   Linking,
   TextInput,
 } from 'react-native';
+import CachedImage from '../../components/CachedImage';
 import { WebView } from 'react-native-webview';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
@@ -277,11 +277,12 @@ export default function MovieDetailScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header with backdrop */}
         <View style={styles.header}>
-          {backdropUrl ? (
-            <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
-          ) : (
-            <View style={[styles.backdrop, styles.backdropPlaceholder]} />
-          )}
+          <CachedImage
+            source={backdropUrl}
+            style={styles.backdrop}
+            contentFit="cover"
+            fallback={<View style={[styles.backdrop, styles.backdropPlaceholder]} />}
+          />
           <View style={styles.backdropGradient} />
           
           {/* Close button */}
@@ -295,9 +296,11 @@ export default function MovieDetailScreen() {
 
           {/* Poster + Title overlay */}
           <View style={styles.headerContent}>
-            {posterUrl && (
-              <Image source={{ uri: posterUrl }} style={styles.posterThumb} />
-            )}
+            <CachedImage
+              source={posterUrl}
+              style={styles.posterThumb}
+              contentFit="cover"
+            />
             <View style={styles.headerTextContainer}>
               <Text style={styles.title}>{movie.title}</Text>
               <View style={styles.metaRow}>
@@ -348,16 +351,16 @@ export default function MovieDetailScreen() {
                   const profileUrl = tmdb.getProfileUrl(actor.profile_path);
                   return (
                     <View key={actor.id} style={styles.castItem}>
-                      {profileUrl ? (
-                        <Image
-                          source={{ uri: profileUrl }}
-                          style={styles.castImage}
-                        />
-                      ) : (
-                        <View style={[styles.castImage, styles.castImagePlaceholder]}>
-                          <Text style={styles.castPlaceholderIcon}>👤</Text>
-                        </View>
-                      )}
+                      <CachedImage
+                        source={profileUrl}
+                        style={styles.castImage}
+                        contentFit="cover"
+                        fallback={
+                          <View style={[styles.castImage, styles.castImagePlaceholder]}>
+                            <Text style={styles.castPlaceholderIcon}>👤</Text>
+                          </View>
+                        }
+                      />
                       <Text style={styles.castName} numberOfLines={2}>
                         {actor.name}
                       </Text>
@@ -397,16 +400,16 @@ export default function MovieDetailScreen() {
                       }}
                       activeOpacity={0.8}
                     >
-                      {posterUrl ? (
-                        <Image
-                          source={{ uri: posterUrl }}
-                          style={styles.similarMoviePoster}
-                        />
-                      ) : (
-                        <View style={[styles.similarMoviePoster, styles.similarMoviePosterPlaceholder]}>
-                          <Text style={styles.similarMoviePlaceholderIcon}>🎬</Text>
-                        </View>
-                      )}
+                      <CachedImage
+                        source={posterUrl}
+                        style={styles.similarMoviePoster}
+                        contentFit="cover"
+                        fallback={
+                          <View style={[styles.similarMoviePoster, styles.similarMoviePosterPlaceholder]}>
+                            <Text style={styles.similarMoviePlaceholderIcon}>🎬</Text>
+                          </View>
+                        }
+                      />
                       <Text style={styles.similarMovieTitle} numberOfLines={2}>
                         {similarMovie.title}
                       </Text>
@@ -456,16 +459,16 @@ export default function MovieDetailScreen() {
                       }}
                       activeOpacity={0.7}
                     >
-                      {logoUrl ? (
-                        <Image
-                          source={{ uri: logoUrl }}
-                          style={styles.providerLogo}
-                        />
-                      ) : (
-                        <View style={[styles.providerLogo, styles.providerLogoPlaceholder]}>
-                          <Text style={styles.providerPlaceholderIcon}>📺</Text>
-                        </View>
-                      )}
+                      <CachedImage
+                        source={logoUrl}
+                        style={styles.providerLogo}
+                        contentFit="cover"
+                        fallback={
+                          <View style={[styles.providerLogo, styles.providerLogoPlaceholder]}>
+                            <Text style={styles.providerPlaceholderIcon}>📺</Text>
+                          </View>
+                        }
+                      />
                       <Text style={styles.providerName} numberOfLines={1}>
                         {provider.provider_name}
                       </Text>

@@ -3,12 +3,13 @@
  * Displays a movie in the user's watchlist with delete option
  */
 
-import { View, Text, StyleSheet, TouchableOpacity, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
+import CachedImage from './CachedImage';
 
 interface WatchlistCardProps {
   item: {
@@ -56,15 +57,12 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
         onPressOut={handlePressOut}
       >
         <View style={styles.posterContainer}>
-          {movie.posterPath ? (
-            <Image
-              source={{ uri: `https://image.tmdb.org/t/p/w200${movie.posterPath}` }}
-              style={styles.poster}
-              resizeMode="cover"
-            />
-          ) : (
-            <Text style={styles.posterPlaceholder}>🎬</Text>
-          )}
+          <CachedImage
+            source={movie.posterPath ? `https://image.tmdb.org/t/p/w200${movie.posterPath}` : null}
+            style={styles.poster}
+            contentFit="cover"
+            fallback={<Text style={styles.posterPlaceholder}>🎬</Text>}
+          />
         </View>
         <View style={styles.info}>
           <Text style={styles.title} numberOfLines={1}>{movie.title}</Text>

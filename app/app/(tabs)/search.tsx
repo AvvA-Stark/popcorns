@@ -11,7 +11,6 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Pressable,
 } from 'react-native';
@@ -20,6 +19,7 @@ import { Colors } from '../../constants/Colors';
 import { tmdb, Movie } from '../../lib/tmdb';
 import { FontAwesome } from '@expo/vector-icons';
 import { SkeletonSearchCard } from '../../components/SkeletonCard';
+import CachedImage from '../../components/CachedImage';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -70,17 +70,16 @@ export default function SearchScreen() {
         onPress={() => handleMoviePress(movie.id)}
       >
         <View style={styles.posterContainer}>
-          {movie.poster_path ? (
-            <Image
-              source={{ uri: `https://image.tmdb.org/t/p/w200${movie.poster_path}` }}
-              style={styles.poster}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.posterPlaceholder}>
-              <Text style={styles.posterPlaceholderText}>🎬</Text>
-            </View>
-          )}
+          <CachedImage
+            source={movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : null}
+            style={styles.poster}
+            contentFit="cover"
+            fallback={
+              <View style={styles.posterPlaceholder}>
+                <Text style={styles.posterPlaceholderText}>🎬</Text>
+              </View>
+            }
+          />
         </View>
 
         <View style={styles.info}>

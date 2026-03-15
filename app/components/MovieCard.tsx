@@ -3,12 +3,13 @@
  * Swipeable card for displaying movie information
  */
 
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../constants/Colors';
 import { Movie } from '../lib/tmdb';
 import { tmdb } from '../lib/tmdb';
+import CachedImage from './CachedImage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.9;
@@ -31,17 +32,16 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
   return (
     <View style={styles.card}>
-      {posterUrl ? (
-        <Image
-          source={{ uri: posterUrl }}
-          style={styles.poster}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.poster, styles.posterPlaceholder]}>
-          <Text style={styles.placeholderText}>🎬</Text>
-        </View>
-      )}
+      <CachedImage
+        source={posterUrl}
+        style={styles.poster}
+        contentFit="cover"
+        fallback={
+          <View style={[styles.poster, styles.posterPlaceholder]}>
+            <Text style={styles.placeholderText}>🎬</Text>
+          </View>
+        }
+      />
       
       {/* Info button overlay */}
       <TouchableOpacity

@@ -409,11 +409,8 @@ export default function DiscoveryScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.subtitle}>
-          {hasActiveFilters() ? 'Filtered results' : 'Random popular movies'}
-        </Text>
 
-        {/* Active filter pills */}
+        {/* Active filter pills moved to top */}
         {hasActiveFilters() && (
           <ScrollView
             horizontal
@@ -679,7 +676,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 12,
+    paddingBottom: 8,
   },
   titleRow: {
     flexDirection: 'row',
@@ -706,7 +703,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   filterPillsContainer: {
-    marginTop: 12,
+    marginTop: 16,
     maxHeight: 40,
   },
   filterPillsContent: {

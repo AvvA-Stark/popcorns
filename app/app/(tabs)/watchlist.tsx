@@ -9,8 +9,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { getWatchlist, removeFromWatchlist, WatchlistItem } from '../../lib/watchlist';
 import WatchlistCard from '../../components/WatchlistCard';
+import { useToast } from '../../lib/toast';
 
 export default function WatchlistScreen() {
+  const { showToast } = useToast();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,10 +61,17 @@ export default function WatchlistScreen() {
             try {
               await removeFromWatchlist(movieId);
               setWatchlist(prev => prev.filter(item => item.id !== movieId));
+              showToast({ 
+                message: `Removed "${movie.title}" from watchlist`, 
+                type: 'info' 
+              });
               console.log(`🗑️ Removed ${movie.title} from watchlist`);
             } catch (error) {
               console.error('Error removing from watchlist:', error);
-              Alert.alert('Error', 'Failed to remove movie from watchlist');
+              showToast({ 
+                message: 'Failed to remove from watchlist', 
+                type: 'error' 
+              });
             }
           },
         },

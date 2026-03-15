@@ -25,6 +25,7 @@ import SwipeStack from '../../components/SwipeStack';
 import { addToWatchlist } from '../../lib/watchlist';
 import { getRegion } from '../../lib/region';
 import SkeletonCard from '../../components/SkeletonCard';
+import { useToast } from '../../lib/toast';
 
 interface Filters {
   genres: number[];
@@ -37,6 +38,7 @@ interface Filters {
 }
 
 export default function DiscoveryScreen() {
+  const { showToast } = useToast();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -211,8 +213,16 @@ export default function DiscoveryScreen() {
     console.log('❤️ Liked:', movie.title);
     try {
       await addToWatchlist(movie, 'normal');
+      showToast({ 
+        message: `Added "${movie.title}" to watchlist`, 
+        type: 'success' 
+      });
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
+      showToast({ 
+        message: 'Failed to add to watchlist', 
+        type: 'error' 
+      });
     }
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
@@ -223,8 +233,16 @@ export default function DiscoveryScreen() {
     console.log('⭐ Super Liked:', movie.title);
     try {
       await addToWatchlist(movie, 'super');
+      showToast({ 
+        message: `⭐ Super-liked "${movie.title}"!`, 
+        type: 'success' 
+      });
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
+      showToast({ 
+        message: 'Failed to add to watchlist', 
+        type: 'error' 
+      });
     }
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);

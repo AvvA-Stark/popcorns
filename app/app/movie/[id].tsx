@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Modal,
   Linking,
+  TextInput,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Colors } from '../../constants/Colors';
@@ -24,6 +25,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
+
+interface UserReview {
+  movieId: number;
+  rating: number; // 1-10
+  text: string;
+  date: string;
+}
 
 const PROVIDER_SEARCH_URLS: Record<string, string> = {
   'Netflix': 'https://www.netflix.com/search?q=',
@@ -48,10 +56,17 @@ export default function MovieDetailScreen() {
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [trailerLoading, setTrailerLoading] = useState(true);
+  
+  // User Reviews state
+  const [reviews, setReviews] = useState<UserReview[]>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState('');
 
   useEffect(() => {
     loadMovieDetails();
     checkWatchlistStatus();
+    loadReviews();
   }, [id]);
 
   const loadMovieDetails = async () => {
@@ -109,6 +124,67 @@ export default function MovieDetailScreen() {
     } catch (err) {
       console.error('Error toggling watchlist:', err);
     }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+      if (reviewsJson) {
+        const allReviews: UserReview[] = JSON.parse(reviewsJson);
+        // Filter reviews for this movie
+        const movieReviews = allReviews.filter(r => r.movieId === Number(id));
+        setReviews(movieReviews);
+      }
+    } catch (err) {
+      console.error('Error loading reviews:', err);
+    }
+  };
+
+  const saveReview = async () => {
+    if (!movie) return;
+
+    try {
+      const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+      let allReviews: UserReview[] = reviewsJson ? JSON.parse(reviewsJson) : [];
+
+      const newReview: UserReview = {
+        movieId: movie.id,
+        rating: reviewRating,
+        text: reviewText.trim(),
+        date: new Date().toISOString(),
+      };
+
+      allReviews.push(newReview);
+      await AsyncStorage.setItem('@popcorns_reviews', JSON.stringify(allReviews));
+      
+      // Reload reviews for this movie
+      await loadReviews();
+      
+      // Reset form
+      setReviewRating(5);
+      setReviewText('');
+      setShowReviewForm(false);
+    } catch (err) {
+      console.error('Error saving review:', err);
+    }
+  };
+
+  const renderStars = (rating: number, size: number = 16) => {
+    const stars = [];
+    const fullStars = Math.floor(rating / 2); // Convert 1-10 to 0-5 stars
+    const hasHalfStar = (rating % 2) >= 1;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<Text key={i} style={{ fontSize: size }}>⭐</Text>);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<Text key={i} style={{ fontSize: size }}>⭐</Text>);
+      } else {
+        stars.push(<Text key={i} style={{ fontSize: size, opacity: 0.3 }}>⭐</Text>);
+      }
+    }
+    
+    return <View style={{ flexDirection: 'row' }}>{stars}</View>;
   };
 
   if (loading) {
@@ -314,6 +390,93 @@ export default function MovieDetailScreen() {
               </TouchableOpacity>
             </View>
           )}
+
+          {/* User Reviews */}
+          <View style={styles.section}>
+            <View style={styles.reviewsHeader}>
+              <Text style={styles.sectionTitle}>User Reviews</Text>
+              <TouchableOpacity
+                style={styles.addReviewButton}
+                onPress={() => setShowReviewForm(!showReviewForm)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.addReviewButtonText}>
+                  {showReviewForm ? '✕ Cancel' : '+ Add Review'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Review Form */}
+            {showReviewForm && (
+              <View style={styles.reviewForm}>
+                <Text style={styles.reviewFormLabel}>Your Rating (1-10)</Text>
+                <View style={styles.ratingSelector}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      style={[
+                        styles.ratingButton,
+                        reviewRating === num && styles.ratingButtonActive,
+                      ]}
+                      onPress={() => setReviewRating(num)}
+                    >
+                      <Text
+                        style={[
+                          styles.ratingButtonText,
+                          reviewRating === num && styles.ratingButtonTextActive,
+                        ]}
+                      >
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                
+                <Text style={styles.reviewFormLabel}>Your Review (Optional)</Text>
+                <TextInput
+                  style={styles.reviewInput}
+                  placeholder="Share your thoughts..."
+                  placeholderTextColor={Colors.textTertiary}
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <TouchableOpacity
+                  style={styles.submitReviewButton}
+                  onPress={saveReview}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.submitReviewButtonText}>Submit Review</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Display Reviews */}
+            {reviews.length > 0 ? (
+              <View style={styles.reviewsList}>
+                {reviews.map((review, index) => (
+                  <View key={index} style={styles.reviewCard}>
+                    <View style={styles.reviewHeader}>
+                      {renderStars(review.rating, 14)}
+                      <Text style={styles.reviewRating}>{review.rating}/10</Text>
+                      <Text style={styles.reviewDate}>
+                        {new Date(review.date).toLocaleDateString()}
+                      </Text>
+                    </View>
+                    {review.text && (
+                      <Text style={styles.reviewText}>{review.text}</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noReviews}>
+                No reviews yet. Be the first to review this movie!
+              </Text>
+            )}
+          </View>
 
           {/* Watchlist Button */}
           <TouchableOpacity
@@ -687,5 +850,122 @@ const styles = StyleSheet.create({
   trailerLoadingText: {
     fontSize: 14,
     color: Colors.textSecondary,
+  },
+  // User Reviews styles
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addReviewButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addReviewButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  reviewForm: {
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 12,
+  },
+  reviewFormLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  ratingSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  ratingButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.textTertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ratingButtonActive: {
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
+  },
+  ratingButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  ratingButtonTextActive: {
+    color: Colors.background,
+  },
+  reviewInput: {
+    backgroundColor: Colors.background,
+    color: Colors.text,
+    padding: 12,
+    borderRadius: 8,
+    fontSize: 14,
+    minHeight: 80,
+    textAlignVertical: 'top' as any,
+    borderWidth: 1,
+    borderColor: Colors.textTertiary,
+  },
+  submitReviewButton: {
+    backgroundColor: Colors.accent,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitReviewButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.background,
+  },
+  reviewsList: {
+    gap: 12,
+  },
+  reviewCard: {
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  reviewRating: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.accent,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+    marginLeft: 'auto',
+  },
+  reviewText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  noReviews: {
+    fontSize: 14,
+    color: Colors.textTertiary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
 });

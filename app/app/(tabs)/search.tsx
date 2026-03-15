@@ -9,10 +9,11 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Pressable,
+  ListRenderItem,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
@@ -59,13 +60,12 @@ export default function SearchScreen() {
     router.push(`/movie/${movieId}`);
   };
 
-  const renderMovieCard = (movie: Movie) => {
+  const renderMovieCard: ListRenderItem<Movie> = ({ item: movie }) => {
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
 
     return (
       <Pressable
-        key={movie.id}
         style={styles.card}
         onPress={() => handleMoviePress(movie.id)}
       >
@@ -98,6 +98,59 @@ export default function SearchScreen() {
     );
   };
 
+  const renderHeader = () => {
+    if (loading) {
+      return (
+        <View>
+          <Text style={styles.resultsCount}>Searching...</Text>
+          {[...Array(5)].map((_, index) => (
+            <SkeletonSearchCard key={index} />
+          ))}
+        </View>
+      );
+    }
+    
+    if (!hasSearched) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>🔎</Text>
+          <Text style={styles.emptyText}>Discover your next favorite movie</Text>
+          <Text style={styles.emptySubtext}>
+            Search by title, actor, or director
+          </Text>
+          <View style={styles.searchHintContainer}>
+            <Text style={styles.searchHint}>💡 Try "Inception" or "Tom Hanks"</Text>
+          </View>
+        </View>
+      );
+    }
+    
+    if (hasSearched && results.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>😕</Text>
+          <Text style={styles.emptyText}>No movies found</Text>
+          <Text style={styles.emptySubtext}>
+            We couldn't find any movies matching "{query}"
+          </Text>
+          <View style={styles.searchHintContainer}>
+            <Text style={styles.searchHint}>💡 Check spelling or try a different title</Text>
+          </View>
+        </View>
+      );
+    }
+    
+    if (results.length > 0) {
+      return (
+        <Text style={styles.resultsCount}>
+          {results.length} {results.length === 1 ? 'result' : 'results'}
+        </Text>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <View style={styles.container}>
       {/* Search Header */}
@@ -123,55 +176,21 @@ export default function SearchScreen() {
       </View>
 
       {/* Results */}
-      <ScrollView
+      <FlatList
+        data={loading || !hasSearched ? [] : results}
+        renderItem={renderMovieCard}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={renderHeader}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
-      >
-        {loading && (
-          <View>
-            <Text style={styles.resultsCount}>Searching...</Text>
-            {[...Array(5)].map((_, index) => (
-              <SkeletonSearchCard key={index} />
-            ))}
-          </View>
-        )}
-
-        {!loading && !hasSearched && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🔎</Text>
-            <Text style={styles.emptyText}>Discover your next favorite movie</Text>
-            <Text style={styles.emptySubtext}>
-              Search by title, actor, or director
-            </Text>
-            <View style={styles.searchHintContainer}>
-              <Text style={styles.searchHint}>💡 Try "Inception" or "Tom Hanks"</Text>
-            </View>
-          </View>
-        )}
-
-        {!loading && hasSearched && results.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>😕</Text>
-            <Text style={styles.emptyText}>No movies found</Text>
-            <Text style={styles.emptySubtext}>
-              We couldn't find any movies matching "{query}"
-            </Text>
-            <View style={styles.searchHintContainer}>
-              <Text style={styles.searchHint}>💡 Check spelling or try a different title</Text>
-            </View>
-          </View>
-        )}
-
-        {!loading && results.length > 0 && (
-          <View style={styles.resultsContainer}>
-            <Text style={styles.resultsCount}>
-              {results.length} {results.length === 1 ? 'result' : 'results'}
-            </Text>
-            {results.map(renderMovieCard)}
-          </View>
-        )}
-      </ScrollView>
+        // Performance optimizations
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        windowSize={10}
+        initialNumToRender={15}
+      />
     </View>
   );
 }

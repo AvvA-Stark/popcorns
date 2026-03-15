@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { getWatchlist, removeFromWatchlist, WatchlistItem } from '../../lib/watchlist';
@@ -92,49 +92,67 @@ export default function WatchlistScreen() {
     );
   }
 
-  if (watchlist.length === 0) {
-    return (
-      <View style={styles.container}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={Colors.primary}
-            />
-          }
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>📋 Your Watchlist</Text>
-            <Text style={styles.subtitle}>Movies you want to watch</Text>
-          </View>
-
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🍿</Text>
-            <Text style={styles.emptyText}>Your watchlist is empty</Text>
-            <Text style={styles.emptySubtext}>
-              Start discovering movies and swipe right to add them here
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.title}>📋 Your Watchlist</Text>
+      {watchlist.length > 0 ? (
+        <View style={styles.stats}>
+          <Text style={styles.statsText}>
+            {watchlist.length} {watchlist.length === 1 ? 'movie' : 'movies'}
+          </Text>
+          {superLikedCount > 0 && (
+            <Text style={styles.statsDetail}>
+              ⭐ {superLikedCount} super {superLikedCount === 1 ? 'like' : 'likes'}
             </Text>
-            <View style={styles.emptyHintRow}>
-              <View style={styles.emptyHint}>
-                <Text style={styles.emptyHintIcon}>👉</Text>
-                <Text style={styles.emptyHintText}>Like</Text>
-              </View>
-              <View style={styles.emptyHint}>
-                <Text style={styles.emptyHintIcon}>👆</Text>
-                <Text style={styles.emptyHintText}>Super Like</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
+          )}
+        </View>
+      ) : (
+        <Text style={styles.subtitle}>Movies you want to watch</Text>
+      )}
+    </View>
+  );
+
+  const renderEmpty = () => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>🍿</Text>
+      <Text style={styles.emptyText}>Your watchlist is empty</Text>
+      <Text style={styles.emptySubtext}>
+        Start discovering movies and swipe right to add them here
+      </Text>
+      <View style={styles.emptyHintRow}>
+        <View style={styles.emptyHint}>
+          <Text style={styles.emptyHintIcon}>👉</Text>
+          <Text style={styles.emptyHintText}>Like</Text>
+        </View>
+        <View style={styles.emptyHint}>
+          <Text style={styles.emptyHintIcon}>👆</Text>
+          <Text style={styles.emptyHintText}>Super Like</Text>
+        </View>
       </View>
-    );
-  }
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.footer}>
+      <Text style={styles.footerText}>
+        Pull down to refresh
+      </Text>
+    </View>
+  );
+
+  const renderItem: ListRenderItem<WatchlistItem> = ({ item }) => (
+    <WatchlistCard item={item} onRemove={handleRemove} />
+  );
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <FlatList
+        data={watchlist}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
@@ -143,37 +161,13 @@ export default function WatchlistScreen() {
             tintColor={Colors.primary}
           />
         }
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>📋 Your Watchlist</Text>
-          <View style={styles.stats}>
-            <Text style={styles.statsText}>
-              {watchlist.length} {watchlist.length === 1 ? 'movie' : 'movies'}
-            </Text>
-            {superLikedCount > 0 && (
-              <Text style={styles.statsDetail}>
-                ⭐ {superLikedCount} super {superLikedCount === 1 ? 'like' : 'likes'}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.list}>
-          {watchlist.map(item => (
-            <WatchlistCard
-              key={item.id}
-              item={item}
-              onRemove={handleRemove}
-            />
-          ))}
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Pull down to refresh
-          </Text>
-        </View>
-      </ScrollView>
+        // Performance optimizations
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        windowSize={10}
+        initialNumToRender={10}
+      />
     </View>
   );
 }

@@ -16,6 +16,7 @@ import {
   Modal,
   Linking,
   TextInput,
+  Alert,
 } from 'react-native';
 import CachedImage from '../../components/CachedImage';
 import { WebView } from 'react-native-webview';
@@ -47,6 +48,26 @@ const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
   'Paramount Plus': 'https://www.paramountplus.com/',
   'Apple TV': 'https://tv.apple.com/',
   'Amazon Video': 'https://www.primevideo.com/',
+  'Max': 'https://www.max.com/',
+  'Paramount+ Amazon Channel': 'https://www.paramountplus.com/',
+  'Showtime': 'https://www.showtime.com/',
+  'Starz': 'https://www.starz.com/',
+  'Crunchyroll': 'https://www.crunchyroll.com/',
+  'YouTube Premium': 'https://www.youtube.com/premium',
+  'Google Play Movies': 'https://play.google.com/store/movies',
+  'Vudu': 'https://www.vudu.com/',
+  'FuboTV': 'https://www.fubo.tv/',
+  'Sling TV': 'https://www.sling.com/',
+  'AMC+': 'https://www.amcplus.com/',
+  'Discovery+': 'https://www.discoveryplus.com/',
+  'ESPN+': 'https://www.espn.com/watch/espnplus/',
+  'Tubi TV': 'https://tubitv.com/',
+  'Pluto TV': 'https://pluto.tv/',
+  'The Roku Channel': 'https://therokuchannel.roku.com/',
+  'Shudder': 'https://www.shudder.com/',
+  'Criterion Channel': 'https://www.criterionchannel.com/',
+  'MUBI': 'https://mubi.com/',
+  'Plex': 'https://www.plex.tv/',
 };
 
 export default function MovieDetailScreen() {
@@ -396,13 +417,28 @@ export default function MovieDetailScreen() {
                     <TouchableOpacity 
                       key={provider.provider_id} 
                       style={styles.providerItem}
-                      onPress={() => {
+                      onPress={async () => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        
+                        // Log the exact provider name for debugging
+                        console.log('Provider pressed:', provider.provider_name);
+                        
                         const homepageUrl = PROVIDER_HOMEPAGE_URLS[provider.provider_name];
                         if (homepageUrl) {
-                          Linking.openURL(homepageUrl).catch(err => 
-                            console.error('Failed to open provider URL:', err)
-                          );
+                          // Check if URL can be opened
+                          const canOpen = await Linking.canOpenURL(homepageUrl);
+                          if (canOpen) {
+                            Linking.openURL(homepageUrl).catch(err => 
+                              console.error('Failed to open provider URL:', err)
+                            );
+                          } else {
+                            console.warn(`Cannot open URL for ${provider.provider_name}: ${homepageUrl}`);
+                            // Fallback to JustWatch
+                            const fallbackUrl = `https://www.justwatch.com/search?q=${encodeURIComponent(movie.title)}`;
+                            Linking.openURL(fallbackUrl).catch(err =>
+                              console.error('Failed to open fallback URL:', err)
+                            );
+                          }
                         } else {
                           console.warn(`No homepage URL configured for provider: ${provider.provider_name}`);
                           // Fallback to JustWatch
@@ -443,7 +479,7 @@ export default function MovieDetailScreen() {
               <TouchableOpacity
                 style={styles.trailerButton}
                 onPress={() => {
-                  setTrailerUrl(`https://www.youtube.com/watch?v=${trailer.key}`);
+                  setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&playsinline=1`);
                   setTrailerLoading(true);
                   setShowTrailer(true);
                 }}
@@ -594,6 +630,8 @@ export default function MovieDetailScreen() {
                 allowsFullscreenVideo={true}
                 allowsInlineMediaPlayback={true}
                 mediaPlaybackRequiresUserAction={false}
+                originWhitelist={['*']}
+                startInLoadingState={true}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 onLoadEnd={() => setTrailerLoading(false)}
@@ -602,8 +640,15 @@ export default function MovieDetailScreen() {
                   console.error('Trailer loading failed:', nativeEvent);
                   setShowTrailer(false);
                   setTrailerLoading(false);
+                  
+                  // Show error alert
+                  Alert.alert('Error', 'Could not load trailer');
+                  
+                  // Fallback: Open in YouTube app
                   if (trailer) {
-                    Linking.openURL(`https://www.youtube.com/watch?v=${trailer.key}`);
+                    Linking.openURL(`https://www.youtube.com/watch?v=${trailer.key}`).catch(err =>
+                      console.error('Failed to open YouTube app:', err)
+                    );
                   }
                 }}
               />

@@ -130,6 +130,7 @@ export const PROVIDER_IDS: Record<string, number> = {
   'Paramount Plus': 398,
   'Crunchyroll': 283,
   'Max': 1899,
+  'SkyShowtime': 1773,
 };
 
 // Module-level cache for genres

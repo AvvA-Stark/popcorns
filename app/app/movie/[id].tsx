@@ -35,17 +35,17 @@ interface UserReview {
   date: string;
 }
 
-const PROVIDER_SEARCH_URLS: Record<string, string> = {
-  'Netflix': 'https://www.netflix.com/search?q=',
-  'Amazon Prime Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
-  'Disney Plus': 'https://www.disneyplus.com/search?query=',
-  'HBO Max': 'https://www.max.com/search?query=',
-  'Apple TV Plus': 'https://tv.apple.com/search?term=',
-  'Hulu': 'https://www.hulu.com/search?q=',
-  'Peacock': 'https://www.peacocktv.com/search?q=',
-  'Paramount Plus': 'https://www.paramountplus.com/search/?q=',
-  'Apple TV': 'https://tv.apple.com/search?term=',
-  'Amazon Video': 'https://www.primevideo.com/search/ref=atv_nb_lang?query=',
+const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
+  'Netflix': 'https://www.netflix.com/',
+  'Amazon Prime Video': 'https://www.primevideo.com/',
+  'Disney Plus': 'https://www.disneyplus.com/',
+  'HBO Max': 'https://www.max.com/',
+  'Apple TV Plus': 'https://tv.apple.com/',
+  'Hulu': 'https://www.hulu.com/',
+  'Peacock': 'https://www.peacocktv.com/',
+  'Paramount Plus': 'https://www.paramountplus.com/',
+  'Apple TV': 'https://tv.apple.com/',
+  'Amazon Video': 'https://www.primevideo.com/',
 };
 
 export default function MovieDetailScreen() {
@@ -412,15 +412,14 @@ export default function MovieDetailScreen() {
                       style={styles.providerItem}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        const searchUrl = PROVIDER_SEARCH_URLS[provider.provider_name];
-                        if (searchUrl) {
-                          const fullUrl = searchUrl + encodeURIComponent(movie.title);
-                          Linking.openURL(fullUrl).catch(err => 
+                        const homepageUrl = PROVIDER_HOMEPAGE_URLS[provider.provider_name];
+                        if (homepageUrl) {
+                          Linking.openURL(homepageUrl).catch(err => 
                             console.error('Failed to open provider URL:', err)
                           );
                         } else {
-                          console.warn(`No search URL configured for provider: ${provider.provider_name}`);
-                          // Fallback to JustWatch (or show alert if preferred)
+                          console.warn(`No homepage URL configured for provider: ${provider.provider_name}`);
+                          // Fallback to JustWatch
                           const fallbackUrl = `https://www.justwatch.com/search?q=${encodeURIComponent(movie.title)}`;
                           Linking.openURL(fallbackUrl).catch(err =>
                             console.error('Failed to open fallback URL:', err)
@@ -458,7 +457,7 @@ export default function MovieDetailScreen() {
               <TouchableOpacity
                 style={styles.trailerButton}
                 onPress={() => {
-                  setTrailerUrl(`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&playsinline=1`);
+                  setTrailerUrl(`https://www.youtube.com/watch?v=${trailer.key}`);
                   setTrailerLoading(true);
                   setShowTrailer(true);
                 }}
@@ -607,11 +606,14 @@ export default function MovieDetailScreen() {
                 source={{ uri: trailerUrl }}
                 style={{ flex: 1 }}
                 allowsFullscreenVideo={true}
+                allowsInlineMediaPlayback={true}
+                mediaPlaybackRequiresUserAction={false}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 onLoadEnd={() => setTrailerLoading(false)}
-                onError={() => {
-                  console.error('Trailer embed failed, opening in YouTube app');
+                onError={(syntheticEvent) => {
+                  const { nativeEvent } = syntheticEvent;
+                  console.error('Trailer loading failed:', nativeEvent);
                   setShowTrailer(false);
                   setTrailerLoading(false);
                   if (trailer) {

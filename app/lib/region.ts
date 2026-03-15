@@ -4,15 +4,30 @@
  */
 
 import * as Localization from 'expo-localization';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const REGION_OVERRIDE_KEY = '@popcorns_region_override';
 
 // Cache the detected region so we only fetch once per app session
 let cachedRegion: string | null = null;
 
 /**
  * Get user's region/country code (e.g., 'US', 'BG', 'GB')
- * Uses device region → IP-based detection → 'US' fallback
+ * Priority: Manual override → Cached → Device region → IP-based detection → 'US' fallback
  */
 export async function getRegion(): Promise<string> {
+  // Check for manual override first (highest priority)
+  try {
+    const override = await AsyncStorage.getItem(REGION_OVERRIDE_KEY);
+    if (override) {
+      console.log(`[Region Detection] Using manual override: ${override}`);
+      cachedRegion = override;
+      return override;
+    }
+  } catch (error) {
+    console.warn('[Region Detection] Failed to read override from AsyncStorage:', error);
+  }
+
   // Return cached region if already detected
   if (cachedRegion) {
     console.log(`[Region Detection] Using cached region: ${cachedRegion}`);
@@ -64,5 +79,36 @@ export async function getRegion(): Promise<string> {
     console.error('[Region Detection] Error detecting region, falling back to US:', error);
     cachedRegion = 'US';
     return 'US';
+  }
+}
+
+/**
+ * Set a manual region override
+ * This takes precedence over auto-detection
+ * @param code - Two-letter country code (e.g., 'BG', 'US')
+ */
+export async function setRegionOverride(code: string): Promise<void> {
+  try {
+    const upperCode = code.toUpperCase();
+    await AsyncStorage.setItem(REGION_OVERRIDE_KEY, upperCode);
+    cachedRegion = upperCode; // Update cache immediately
+    console.log(`[Region Detection] Manual override set: ${upperCode}`);
+  } catch (error) {
+    console.error('[Region Detection] Failed to save region override:', error);
+    throw error;
+  }
+}
+
+/**
+ * Clear the manual region override and reset to auto-detection
+ */
+export async function clearRegionOverride(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(REGION_OVERRIDE_KEY);
+    cachedRegion = null; // Clear cache to force re-detection
+    console.log('[Region Detection] Manual override cleared, will auto-detect on next call');
+  } catch (error) {
+    console.error('[Region Detection] Failed to clear region override:', error);
+    throw error;
   }
 }

@@ -24,6 +24,7 @@ import { Colors } from '../../constants/Colors';
 import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRegion } from '../../context/RegionContext';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -94,11 +95,8 @@ export default function MovieDetailScreen() {
 
   const checkWatchlistStatus = async () => {
     try {
-      const watchlistJson = await AsyncStorage.getItem('@popcorns_watchlist');
-      if (watchlistJson) {
-        const watchlist = JSON.parse(watchlistJson);
-        setIsInWatchlist(watchlist.some((m: any) => m.id === Number(id)));
-      }
+      const inWatchlist = await isInWatchlist(Number(id));
+      setIsInWatchlist(inWatchlist);
     } catch (err) {
       console.error('Error checking watchlist:', err);
     }
@@ -109,27 +107,15 @@ export default function MovieDetailScreen() {
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const watchlistJson = await AsyncStorage.getItem('@popcorns_watchlist');
-      let watchlist = watchlistJson ? JSON.parse(watchlistJson) : [];
-
+      
       if (isInWatchlist) {
         // Remove from watchlist
-        watchlist = watchlist.filter((m: any) => m.id !== movie.id);
+        await removeFromWatchlist(movie.id);
       } else {
-        // Add to watchlist
-        watchlist.push({
-          id: movie.id,
-          title: movie.title,
-          poster_path: movie.poster_path,
-          release_date: movie.release_date,
-          vote_average: movie.vote_average,
-          overview: movie.overview,
-          genre_ids: movie.genre_ids,
-          addedAt: new Date().toISOString(),
-        });
+        // Add to watchlist with normal priority (from detail screen)
+        await addToWatchlist(movie, 'normal');
       }
 
-      await AsyncStorage.setItem('@popcorns_watchlist', JSON.stringify(watchlist));
       setIsInWatchlist(!isInWatchlist);
     } catch (err) {
       console.error('Error toggling watchlist:', err);

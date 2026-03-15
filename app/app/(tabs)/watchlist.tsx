@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { getWatchlist, removeFromWatchlist, WatchlistItem } from '../../lib/watchlist';
@@ -42,41 +43,49 @@ export default function WatchlistScreen() {
     setRefreshing(false);
   };
 
-  const handleRemove = async (movieId: number) => {
+  const handleRemove = async (movieId: number, skipConfirmation: boolean = false) => {
     const movie = watchlist.find(item => item.id === movieId);
     if (!movie) return;
 
-    Alert.alert(
-      'Remove from Watchlist',
-      `Remove "${movie.title}" from your watchlist?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeFromWatchlist(movieId);
-              setWatchlist(prev => prev.filter(item => item.id !== movieId));
-              showToast({ 
-                message: `Removed "${movie.title}" from watchlist`, 
-                type: 'info' 
-              });
-              console.log(`🗑️ Removed ${movie.title} from watchlist`);
-            } catch (error) {
-              console.error('Error removing from watchlist:', error);
-              showToast({ 
-                message: 'Failed to remove from watchlist', 
-                type: 'error' 
-              });
-            }
+    const performDelete = async () => {
+      try {
+        await removeFromWatchlist(movieId);
+        setWatchlist(prev => prev.filter(item => item.id !== movieId));
+        showToast({ 
+          message: `Removed "${movie.title}" from watchlist`, 
+          type: 'info' 
+        });
+        console.log(`🗑️ Removed ${movie.title} from watchlist`);
+      } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        showToast({ 
+          message: 'Failed to remove from watchlist', 
+          type: 'error' 
+        });
+      }
+    };
+
+    if (skipConfirmation) {
+      // For swipe-to-delete: immediate removal without confirmation
+      await performDelete();
+    } else {
+      // For button tap: show confirmation alert
+      Alert.alert(
+        'Remove from Watchlist',
+        `Remove "${movie.title}" from your watchlist?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: performDelete,
+          },
+        ]
+      );
+    }
   };
 
   const superLikedCount = watchlist.filter(item => item.priority === 'super').length;
@@ -145,7 +154,7 @@ export default function WatchlistScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <FlatList
         data={watchlist}
         renderItem={renderItem}
@@ -168,7 +177,7 @@ export default function WatchlistScreen() {
         windowSize={10}
         initialNumToRender={10}
       />
-    </View>
+    </GestureHandlerRootView>
   );
 }
 

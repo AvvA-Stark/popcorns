@@ -5,6 +5,7 @@
 
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
+import { Swipeable } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors as colors } from '../constants/Colors';
@@ -22,7 +23,7 @@ interface WatchlistCardProps {
     addedAt: number;
     priority?: 'normal' | 'super';
   };
-  onRemove: (id: number) => void;
+  onRemove: (id: number, skipConfirmation?: boolean) => void;
 }
 
 export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
@@ -48,14 +49,37 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
     router.push(`/movie/${movie.id}`);
   };
 
-  return (
-    <Animated.View style={[styles.card, animatedStyle]}>
-      <Pressable 
-        style={styles.content}
-        onPress={handleCardPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+  const handleSwipeDelete = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onDelete(movie.id, true); // Skip confirmation for swipe gesture
+  };
+
+  const renderRightActions = () => (
+    <View style={styles.swipeActionContainer}>
+      <TouchableOpacity 
+        style={styles.deleteSwipeButton}
+        onPress={handleSwipeDelete}
+        activeOpacity={0.8}
       >
+        <FontAwesome name="trash" size={24} color="#fff" />
+        <Text style={styles.deleteSwipeText}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <Swipeable
+      renderRightActions={renderRightActions}
+      overshootRight={false}
+      friction={2}
+    >
+      <Animated.View style={[styles.card, animatedStyle]}>
+        <Pressable 
+          style={styles.content}
+          onPress={handleCardPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
         <View style={styles.posterContainer}>
           <CachedImage
             source={movie.posterPath ? `https://image.tmdb.org/t/p/w200${movie.posterPath}` : null}
@@ -99,7 +123,8 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
           <FontAwesome name="trash" size={20} color={colors.error} />
         </TouchableOpacity>
       </Pressable>
-    </Animated.View>
+      </Animated.View>
+    </Swipeable>
   );
 }
 
@@ -199,5 +224,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 8,
+  },
+  swipeActionContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginVertical: 6,
+  },
+  deleteSwipeButton: {
+    backgroundColor: colors.error,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 90,
+    height: '100%',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  deleteSwipeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 4,
   },
 });

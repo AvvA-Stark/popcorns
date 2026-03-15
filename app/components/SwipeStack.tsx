@@ -60,6 +60,14 @@ export default function SwipeStack({
     setCurrentIndex((prev) => prev + 1);
   }, [movies, currentIndex, onSwipeLeft, onSwipeRight, onSwipeUp]);
 
+  // Rapid shake haptic for super like
+  const superLikeShake = async () => {
+    for (let i = 0; i < 4; i++) {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      await new Promise(r => setTimeout(r, 60));
+    }
+  };
+
   const panGesture = Gesture.Pan()
     .onBegin(() => {
       // Light haptic on swipe start
@@ -75,8 +83,8 @@ export default function SwipeStack({
       const isSwipedUp = translateY.value < SUPER_LIKE_THRESHOLD && Math.abs(translateX.value) < SWIPE_THRESHOLD;
 
       if (isSwipedUp) {
-        // Heavy haptic for super like (stronger feedback)
-        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Heavy);
+        // Rapid shake haptic for super like (stronger feedback)
+        runOnJS(superLikeShake)();
         translateY.value = withTiming(-SCREEN_HEIGHT, { duration: 300 });
         translateX.value = withTiming(0, { duration: 300 }, () => {
           runOnJS(handleSwipeComplete)('up');

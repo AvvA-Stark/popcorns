@@ -17,6 +17,7 @@ import Animated, {
   Extrapolation,
   SharedValue,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Movie } from '../lib/tmdb';
 import MovieCard from './MovieCard';
 import { Colors } from '../constants/Colors';
@@ -60,6 +61,10 @@ export default function SwipeStack({
   }, [movies, currentIndex, onSwipeLeft, onSwipeRight, onSwipeUp]);
 
   const panGesture = Gesture.Pan()
+    .onBegin(() => {
+      // Light haptic on swipe start
+      runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
+    })
     .onUpdate((event) => {
       translateX.value = event.translationX;
       translateY.value = event.translationY;
@@ -70,6 +75,8 @@ export default function SwipeStack({
       const isSwipedUp = translateY.value < SUPER_LIKE_THRESHOLD && Math.abs(translateX.value) < SWIPE_THRESHOLD;
 
       if (isSwipedUp) {
+        // Medium haptic on swipe completion
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
         translateY.value = withTiming(-SCREEN_HEIGHT, { duration: 300 });
         translateX.value = withTiming(0, { duration: 300 }, () => {
           runOnJS(handleSwipeComplete)('up');
@@ -77,6 +84,8 @@ export default function SwipeStack({
           translateY.value = 0;
         });
       } else if (isSwipedLeft) {
+        // Medium haptic on swipe completion
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
         translateX.value = withTiming(-SCREEN_WIDTH * 1.5, { duration: 300 });
         translateY.value = withTiming(event.translationY, { duration: 300 }, () => {
           runOnJS(handleSwipeComplete)('left');
@@ -84,6 +93,8 @@ export default function SwipeStack({
           translateY.value = 0;
         });
       } else if (isSwipedRight) {
+        // Medium haptic on swipe completion
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
         translateX.value = withTiming(SCREEN_WIDTH * 1.5, { duration: 300 });
         translateY.value = withTiming(event.translationY, { duration: 300 }, () => {
           runOnJS(handleSwipeComplete)('right');

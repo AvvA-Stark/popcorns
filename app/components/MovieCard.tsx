@@ -5,6 +5,7 @@
 
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '../constants/Colors';
 import { Movie } from '../lib/tmdb';
 import { tmdb } from '../lib/tmdb';
@@ -24,6 +25,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
 
   const handleInfoPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(`/movie/${movie.id}`);
   };
 

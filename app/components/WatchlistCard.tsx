@@ -6,6 +6,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -42,6 +43,7 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
   };
 
   const handleCardPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(`/movie/${movie.id}`);
   };
 
@@ -91,6 +93,7 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
           style={styles.deleteButton}
           onPress={(e) => {
             e?.stopPropagation?.();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onDelete(movie.id);
           }}
           activeOpacity={0.7}

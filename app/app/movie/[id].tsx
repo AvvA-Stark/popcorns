@@ -19,6 +19,7 @@ import {
   TextInput,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
 import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -106,6 +107,7 @@ export default function MovieDetailScreen() {
     if (!movie) return;
 
     try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       const watchlistJson = await AsyncStorage.getItem('@popcorns_watchlist');
       let watchlist = watchlistJson ? JSON.parse(watchlistJson) : [];
 
@@ -151,6 +153,7 @@ export default function MovieDetailScreen() {
     if (!movie) return;
 
     try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
       let allReviews: UserReview[] = reviewsJson ? JSON.parse(reviewsJson) : [];
 
@@ -360,6 +363,7 @@ export default function MovieDetailScreen() {
                       key={similarMovie.id}
                       style={styles.similarMovieCard}
                       onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         // Navigate to this movie's detail screen
                         router.push(`/movie/${similarMovie.id}`);
                       }}
@@ -405,6 +409,7 @@ export default function MovieDetailScreen() {
                       key={provider.provider_id} 
                       style={styles.providerItem}
                       onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         const searchUrl = PROVIDER_SEARCH_URLS[provider.provider_name];
                         if (searchUrl) {
                           const fullUrl = searchUrl + encodeURIComponent(movie.title);

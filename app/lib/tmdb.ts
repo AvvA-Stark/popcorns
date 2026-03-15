@@ -5,6 +5,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { Config } from '../constants/Config';
+import { getCached, setCached, CacheTTL, CacheKey } from './cache';
 
 export interface Movie {
   id: number;
@@ -192,12 +193,27 @@ class TMDBClient {
   }
 
   /**
-   * Fetch movie details by ID
+   * Fetch movie details by ID (with caching)
    */
   async getMovieDetails(movieId: number): Promise<MovieDetails> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.movieDetails(movieId);
+      const cached = await getCached<MovieDetails>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Movie details ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching movie details ${movieId}`);
       const response = await this.client.get(`/movie/${movieId}`);
-      return response.data;
+      const data = response.data;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.MOVIE_DETAILS);
+      
+      return data;
     } catch (error) {
       console.error(`Error fetching movie details for ${movieId}:`, error);
       throw error;
@@ -205,10 +221,20 @@ class TMDBClient {
   }
 
   /**
-   * Search movies by query
+   * Search movies by query (with caching)
    */
   async searchMovies(query: string, page: number = 1): Promise<Movie[]> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.searchResults(query, page);
+      const cached = await getCached<Movie[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Search "${query}"`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Searching "${query}"`);
       const response = await this.client.get('/search/movie', {
         params: {
           query,
@@ -216,7 +242,12 @@ class TMDBClient {
           include_adult: false,
         },
       });
-      return response.data.results;
+      const data = response.data.results;
+      
+      // Cache the result (1 hour - search results change less frequently)
+      await setCached(cacheKey, data, CacheTTL.SEARCH_RESULTS);
+      
+      return data;
     } catch (error) {
       console.error('Error searching movies:', error);
       throw error;
@@ -224,15 +255,30 @@ class TMDBClient {
   }
 
   /**
-   * Get watch providers (streaming availability) for a movie
+   * Get watch providers (streaming availability) for a movie (with caching)
    * @param movieId - The movie ID
    * @param region - Optional region code (e.g., 'US', 'BG'). If not provided, returns all regions
    */
   async getWatchProviders(movieId: number, region?: string): Promise<WatchProviders> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.watchProviders(movieId, region);
+      const cached = await getCached<WatchProviders>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Watch providers ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching watch providers ${movieId}`);
       const params = region ? { watch_region: region } : {};
       const response = await this.client.get(`/movie/${movieId}/watch/providers`, { params });
-      return response.data.results;
+      const data = response.data.results;
+      
+      // Cache the result (7 days - providers rarely change)
+      await setCached(cacheKey, data, CacheTTL.WATCH_PROVIDERS);
+      
+      return data;
     } catch (error) {
       console.error(`Error fetching watch providers for ${movieId}:`, error);
       throw error;
@@ -371,12 +417,27 @@ class TMDBClient {
   }
 
   /**
-   * Get movie credits (cast & crew)
+   * Get movie credits (cast & crew) (with caching)
    */
   async getMovieCredits(movieId: number): Promise<Credits> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.credits(movieId);
+      const cached = await getCached<Credits>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Credits ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching credits ${movieId}`);
       const response = await this.client.get(`/movie/${movieId}/credits`);
-      return response.data;
+      const data = response.data;
+      
+      // Cache the result (7 days - cast rarely changes)
+      await setCached(cacheKey, data, CacheTTL.CREDITS);
+      
+      return data;
     } catch (error) {
       console.error(`Error fetching credits for ${movieId}:`, error);
       throw error;
@@ -384,12 +445,27 @@ class TMDBClient {
   }
 
   /**
-   * Get movie videos (trailers, teasers, etc.)
+   * Get movie videos (trailers, teasers, etc.) (with caching)
    */
   async getVideos(movieId: number): Promise<Video[]> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.videos(movieId);
+      const cached = await getCached<Video[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Videos ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching videos ${movieId}`);
       const response = await this.client.get(`/movie/${movieId}/videos`);
-      return response.data.results;
+      const data = response.data.results;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.VIDEOS);
+      
+      return data;
     } catch (error) {
       console.error(`Error fetching videos for ${movieId}:`, error);
       throw error;
@@ -454,14 +530,29 @@ class TMDBClient {
   }
 
   /**
-   * Get similar movies for a given movie ID
+   * Get similar movies for a given movie ID (with caching)
    */
   async getSimilarMovies(movieId: number, page: number = 1): Promise<Movie[]> {
     try {
+      // Check cache first
+      const cacheKey = CacheKey.similarMovies(movieId, page);
+      const cached = await getCached<Movie[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Similar movies ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching similar movies ${movieId}`);
       const response = await this.client.get(`/movie/${movieId}/similar`, {
         params: { page },
       });
-      return response.data.results;
+      const data = response.data.results;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.SIMILAR_MOVIES);
+      
+      return data;
     } catch (error) {
       console.error(`Error fetching similar movies for ${movieId}:`, error);
       throw error;

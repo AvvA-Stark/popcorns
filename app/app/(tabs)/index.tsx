@@ -29,17 +29,19 @@ import { useRegion } from '../../context/RegionContext';
 
 interface Filters {
   genres: number[];
-  year?: number;
+  yearFrom?: number;
+  yearTo?: number;
   actorId?: number;
   actorName?: string;
   provider?: number;
   providerName?: string;
   ratingGte?: number;
+  availableInRegion?: boolean;
 }
 
 export default function DiscoveryScreen() {
   const { showToast } = useToast();
-  const { region } = useRegion();
+  const { region, regionName } = useRegion();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -82,10 +84,12 @@ export default function DiscoveryScreen() {
   const hasActiveFilters = () => {
     return (
       filters.genres.length > 0 ||
-      filters.year !== undefined ||
+      filters.yearFrom !== undefined ||
+      filters.yearTo !== undefined ||
       filters.actorId !== undefined ||
       filters.provider !== undefined ||
-      filters.ratingGte !== undefined
+      filters.ratingGte !== undefined ||
+      filters.availableInRegion === true
     );
   };
 
@@ -151,16 +155,19 @@ export default function DiscoveryScreen() {
       const activeFilters = filtersOverride !== undefined ? filtersOverride : filters;
       const hasFilters = 
         activeFilters.genres.length > 0 ||
-        activeFilters.year !== undefined ||
+        activeFilters.yearFrom !== undefined ||
+        activeFilters.yearTo !== undefined ||
         activeFilters.actorId !== undefined ||
         activeFilters.provider !== undefined ||
-        activeFilters.ratingGte !== undefined;
+        activeFilters.ratingGte !== undefined ||
+        activeFilters.availableInRegion === true;
 
       if (hasFilters) {
         // Use filters (region from context)
         const response = await tmdb.discoverMovies({
           genres: activeFilters.genres.length > 0 ? activeFilters.genres : undefined,
-          year: activeFilters.year,
+          year_gte: activeFilters.yearFrom,
+          year_lte: activeFilters.yearTo,
           actor: activeFilters.actorId,
           provider: activeFilters.provider,
           rating_gte: activeFilters.ratingGte,
@@ -169,6 +176,15 @@ export default function DiscoveryScreen() {
         });
         // Filter out movies without posters in Discovery
         moviesData = response.results.filter(movie => movie.poster_path);
+        
+        // Apply region availability filter if enabled
+        if (activeFilters.availableInRegion) {
+          moviesData = moviesData.filter(movie => {
+            const providers = movie.watchProviders?.results?.[region];
+            return providers && Object.keys(providers).length > 0;
+          });
+        }
+        
         setHasMore(page < response.total_pages && response.total_pages > 0);
       } else {
         // Random mode - no filters (limit to last 40 years)
@@ -315,6 +331,9 @@ export default function DiscoveryScreen() {
     } else if (filterKey === 'provider') {
       delete updatedFilters.provider;
       delete updatedFilters.providerName;
+    } else if (filterKey === 'yearFrom') {
+      delete updatedFilters.yearFrom;
+      delete updatedFilters.yearTo;
     } else {
       delete updatedFilters[filterKey];
     }
@@ -323,10 +342,12 @@ export default function DiscoveryScreen() {
     // Check if all filters are now empty
     const isEmpty = 
       updatedFilters.genres.length === 0 &&
-      !updatedFilters.year &&
+      !updatedFilters.yearFrom &&
+      !updatedFilters.yearTo &&
       !updatedFilters.actorId &&
       !updatedFilters.provider &&
-      updatedFilters.ratingGte === undefined;
+      updatedFilters.ratingGte === undefined &&
+      !updatedFilters.availableInRegion;
     
     if (isEmpty) {
       const newRandomPage = Math.floor(Math.random() * 100) + 1;
@@ -443,12 +464,14 @@ export default function DiscoveryScreen() {
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
-            {filters.year && (
+            {(filters.yearFrom || filters.yearTo) && (
               <TouchableOpacity
                 style={styles.filterPill}
-                onPress={() => removeFilter('year')}
+                onPress={() => removeFilter('yearFrom')}
               >
-                <Text style={styles.filterPillText}>Year: {filters.year}</Text>
+                <Text style={styles.filterPillText}>
+                  Year: {filters.yearFrom || '—'} - {filters.yearTo || '—'}
+                </Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
@@ -476,6 +499,15 @@ export default function DiscoveryScreen() {
                 onPress={() => removeFilter('ratingGte')}
               >
                 <Text style={styles.filterPillText}>Rating ≥ {filters.ratingGte.toFixed(1)}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.availableInRegion && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('availableInRegion')}
+              >
+                <Text style={styles.filterPillText}>Available in {regionName}</Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
@@ -561,23 +593,51 @@ export default function DiscoveryScreen() {
                 )}
               </View>
 
-              {/* Year */}
+              {/* Year Range */}
               <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Year</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="e.g., 2020"
-                  placeholderTextColor={Colors.textSecondary}
-                  keyboardType="numeric"
-                  value={tempFilters.year?.toString() || ''}
-                  onChangeText={(text) => {
-                    const year = parseInt(text);
-                    setTempFilters((prev) => ({
-                      ...prev,
-                      year: isNaN(year) ? undefined : year,
-                    }));
-                  }}
-                />
+                <Text style={styles.filterLabel}>
+                  Year Range: {tempFilters.yearFrom || 1900} — {tempFilters.yearTo || new Date().getFullYear()}
+                </Text>
+                <View style={styles.yearRangeContainer}>
+                  <View style={styles.yearSliderContainer}>
+                    <Text style={styles.yearSliderLabel}>From</Text>
+                    <Slider
+                      style={styles.slider}
+                      minimumValue={1900}
+                      maximumValue={new Date().getFullYear()}
+                      step={1}
+                      value={tempFilters.yearFrom || 1900}
+                      onValueChange={(value) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          yearFrom: value > 1900 ? value : undefined,
+                        }))
+                      }
+                      minimumTrackTintColor={Colors.primary}
+                      maximumTrackTintColor={'#333333'}
+                      thumbTintColor={Colors.primary}
+                    />
+                  </View>
+                  <View style={styles.yearSliderContainer}>
+                    <Text style={styles.yearSliderLabel}>To</Text>
+                    <Slider
+                      style={styles.slider}
+                      minimumValue={1900}
+                      maximumValue={new Date().getFullYear()}
+                      step={1}
+                      value={tempFilters.yearTo || new Date().getFullYear()}
+                      onValueChange={(value) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          yearTo: value < new Date().getFullYear() ? value : undefined,
+                        }))
+                      }
+                      minimumTrackTintColor={Colors.primary}
+                      maximumTrackTintColor={'#333333'}
+                      thumbTintColor={Colors.primary}
+                    />
+                  </View>
+                </View>
               </View>
 
               {/* Actor */}
@@ -664,6 +724,32 @@ export default function DiscoveryScreen() {
                   maximumTrackTintColor={'#333333'}
                   thumbTintColor={Colors.primary}
                 />
+              </View>
+
+              {/* Available in Region */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterLabel}>Availability</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.regionToggle,
+                    tempFilters.availableInRegion && styles.regionToggleActive,
+                  ]}
+                  onPress={() =>
+                    setTempFilters((prev) => ({
+                      ...prev,
+                      availableInRegion: !prev.availableInRegion,
+                    }))
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.regionToggleText,
+                      tempFilters.availableInRegion && styles.regionToggleTextActive,
+                    ]}
+                  >
+                    {tempFilters.availableInRegion ? '✓ ' : ''}Available in {regionName}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </ScrollView>
 
@@ -912,6 +998,38 @@ const styles = StyleSheet.create({
   slider: {
     width: '100%',
     height: 40,
+  },
+  yearRangeContainer: {
+    gap: 16,
+  },
+  yearSliderContainer: {
+    gap: 4,
+  },
+  yearSliderLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  regionToggle: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  regionToggleActive: {
+    backgroundColor: Colors.primary + '20',
+    borderColor: Colors.primary,
+  },
+  regionToggleText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  regionToggleTextActive: {
+    color: Colors.primary,
+    fontWeight: '600',
   },
   modalActions: {
     flexDirection: 'row',

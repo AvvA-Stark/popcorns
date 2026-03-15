@@ -64,7 +64,7 @@ export default function TabsLayout() {
         name="watchlist"
         options={{
           title: 'Watchlist',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📋</Text>,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🍿</Text>,
         }}
       />
       <Tabs.Screen

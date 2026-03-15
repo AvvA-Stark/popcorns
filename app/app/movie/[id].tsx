@@ -22,6 +22,7 @@ import { WebView } from 'react-native-webview';
 import { Colors } from '../../constants/Colors';
 import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getRegion } from '../../lib/region';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -78,7 +79,8 @@ export default function MovieDetailScreen() {
     try {
       setLoading(true);
       setError(null);
-      const details = await tmdb.getMovieDetailsComplete(Number(id));
+      const region = getRegion();
+      const details = await tmdb.getMovieDetailsComplete(Number(id), region);
       setMovie(details);
     } catch (err) {
       console.error('Error loading movie details:', err);
@@ -234,8 +236,9 @@ export default function MovieDetailScreen() {
   const trailer = movie.videos ? tmdb.getYouTubeTrailer(movie.videos) : null;
   const topCast = movie.credits?.cast.slice(0, 10) || [];
   
-  // Get streaming providers (prioritize US, fallback to first available)
-  const providers = movie.watchProviders?.['US'] || Object.values(movie.watchProviders || {})[0];
+  // Get streaming providers (use detected region, fallback to first available)
+  const userRegion = getRegion();
+  const providers = movie.watchProviders?.[userRegion] || Object.values(movie.watchProviders || {})[0];
   const streamingServices = providers?.flatrate || [];
 
   return (

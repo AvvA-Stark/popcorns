@@ -23,6 +23,7 @@ import { Colors } from '../../constants/Colors';
 import { tmdb, Movie, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
 import SwipeStack from '../../components/SwipeStack';
 import { addToWatchlist } from '../../lib/watchlist';
+import { getRegion } from '../../lib/region';
 
 interface Filters {
   genres: number[];
@@ -144,6 +145,7 @@ export default function DiscoveryScreen() {
 
       if (hasActiveFilters()) {
         // Use filters
+        const region = getRegion();
         const response = await tmdb.discoverMovies({
           genres: filters.genres.length > 0 ? filters.genres : undefined,
           year: filters.year,
@@ -151,6 +153,7 @@ export default function DiscoveryScreen() {
           provider: filters.provider,
           rating_gte: filters.ratingGte,
           page,
+          region, // Pass detected region for provider filtering
         });
         moviesData = response.results;
         setHasMore(page < response.total_pages && response.total_pages > 0);

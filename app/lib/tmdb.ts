@@ -110,6 +110,7 @@ export interface DiscoverMoviesParams {
   provider?: number;
   rating_gte?: number;
   page?: number;
+  region?: string;
 }
 
 export interface DiscoverMoviesResponse {
@@ -224,8 +225,10 @@ class TMDBClient {
 
   /**
    * Get watch providers (streaming availability) for a movie
+   * @param movieId - The movie ID
+   * @param region - Optional region code (e.g., 'US', 'BG'). If not provided, returns all regions
    */
-  async getWatchProviders(movieId: number): Promise<WatchProviders> {
+  async getWatchProviders(movieId: number, region?: string): Promise<WatchProviders> {
     try {
       const response = await this.client.get(`/movie/${movieId}/watch/providers`);
       return response.data.results;
@@ -312,7 +315,7 @@ class TMDBClient {
       // Streaming provider filter
       if (params.provider) {
         queryParams.with_watch_providers = params.provider;
-        queryParams.watch_region = 'US'; // Required when using with_watch_providers
+        queryParams.watch_region = params.region || 'US'; // Use detected region or fallback to US
       }
 
       // Minimum rating filter
@@ -395,15 +398,17 @@ class TMDBClient {
   /**
    * Get complete movie details with credits, videos, and watch providers
    * This is the main method to use for the detail modal
+   * @param movieId - The movie ID
+   * @param region - Optional region code for watch providers (e.g., 'US', 'BG')
    */
-  async getMovieDetailsComplete(movieId: number): Promise<MovieDetailsComplete> {
+  async getMovieDetailsComplete(movieId: number, region?: string): Promise<MovieDetailsComplete> {
     try {
       // Fetch all data in parallel
       const [details, credits, videos, watchProviders] = await Promise.all([
         this.getMovieDetails(movieId),
         this.getMovieCredits(movieId).catch(() => ({ cast: [], crew: [] })),
         this.getVideos(movieId).catch(() => []),
-        this.getWatchProviders(movieId).catch(() => ({})),
+        this.getWatchProviders(movieId, region).catch(() => ({})),
       ]);
 
       return {

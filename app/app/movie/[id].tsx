@@ -96,6 +96,10 @@ export default function MovieDetailScreen() {
   
   // Region debug modal
   const [showRegionDebug, setShowRegionDebug] = useState(false);
+  
+  // Region state
+  const [userRegion, setUserRegion] = useState('US');
+  const [regionName, setRegionName] = useState('United States');
 
   useEffect(() => {
     loadMovieDetails();
@@ -108,7 +112,9 @@ export default function MovieDetailScreen() {
     try {
       setLoading(true);
       setError(null);
-      const region = getRegion();
+      const region = await getRegion();
+      setUserRegion(region);
+      setRegionName(getRegionName(region));
       setShowRegionDebug(true); // Show region debug modal
       const details = await tmdb.getMovieDetailsComplete(Number(id), region);
       setMovie(details);
@@ -267,10 +273,6 @@ export default function MovieDetailScreen() {
   
   const trailer = movie.videos ? tmdb.getYouTubeTrailer(movie.videos) : null;
   const topCast = movie.credits?.cast.slice(0, 10) || [];
-  
-  // Get streaming providers (use detected region, fallback to first available)
-  const userRegion = getRegion();
-  const regionName = getRegionName(userRegion);
   const providers = movie.watchProviders?.[userRegion] || Object.values(movie.watchProviders || {})[0];
   const streamingServices = providers?.flatrate || [];
 

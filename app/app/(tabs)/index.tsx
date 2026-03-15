@@ -148,7 +148,7 @@ export default function DiscoveryScreen() {
 
       if (hasActiveFilters()) {
         // Use filters
-        const region = getRegion();
+        const region = await getRegion();
         const response = await tmdb.discoverMovies({
           genres: filters.genres.length > 0 ? filters.genres : undefined,
           year: filters.year,

@@ -1,8 +1,9 @@
 /**
  * RangeSlider Component
- * Dual-thumb range slider using two overlapping sliders
+ * Dual-thumb range slider using two overlapping sliders with proper gesture handling
  */
 
+import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Colors } from '../constants/Colors';
@@ -32,19 +33,36 @@ export default function RangeSlider({
   maximumTrackTintColor = '#333333',
   thumbTintColor = Colors.primary,
 }: RangeSliderProps) {
+  // Track which thumb is being dragged (null = neither)
+  const [activeThumb, setActiveThumb] = useState<'from' | 'to' | null>(null);
+
   const handleFromChange = (value: number) => {
     // Ensure 'from' doesn't exceed 'to'
-    if (value <= toValue) {
-      onFromChange(value);
-    }
+    const clampedValue = Math.min(value, toValue);
+    onFromChange(clampedValue);
   };
 
   const handleToChange = (value: number) => {
     // Ensure 'to' doesn't go below 'from'
-    if (value >= fromValue) {
-      onToChange(value);
-    }
+    const clampedValue = Math.max(value, fromValue);
+    onToChange(clampedValue);
   };
+
+  const handleFromStart = () => {
+    setActiveThumb('from');
+  };
+
+  const handleToStart = () => {
+    setActiveThumb('to');
+  };
+
+  const handleEnd = () => {
+    setActiveThumb(null);
+  };
+
+  // Dynamically adjust z-index based on which thumb is active
+  const fromZIndex = activeThumb === 'from' ? 3 : 1;
+  const toZIndex = activeThumb === 'to' ? 3 : 2;
 
   return (
     <View style={styles.container}>
@@ -63,27 +81,31 @@ export default function RangeSlider({
           />
         </View>
 
-        {/* 'From' slider (rendered first, on bottom layer) */}
+        {/* 'From' slider - z-index increases when dragging */}
         <Slider
-          style={[styles.slider, styles.sliderBottom]}
+          style={[styles.slider, { zIndex: fromZIndex }]}
           minimumValue={minValue}
           maximumValue={maxValue}
           step={step}
           value={fromValue}
           onValueChange={handleFromChange}
+          onSlidingStart={handleFromStart}
+          onSlidingComplete={handleEnd}
           minimumTrackTintColor="transparent"
           maximumTrackTintColor={maximumTrackTintColor}
           thumbTintColor={thumbTintColor}
         />
 
-        {/* 'To' slider (rendered second, on top layer) */}
+        {/* 'To' slider - z-index increases when dragging */}
         <Slider
-          style={[styles.slider, styles.sliderTop]}
+          style={[styles.slider, { zIndex: toZIndex }]}
           minimumValue={minValue}
           maximumValue={maxValue}
           step={step}
           value={toValue}
           onValueChange={handleToChange}
+          onSlidingStart={handleToStart}
+          onSlidingComplete={handleEnd}
           minimumTrackTintColor="transparent"
           maximumTrackTintColor="transparent"
           thumbTintColor={thumbTintColor}
@@ -125,12 +147,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: 40,
-  },
-  sliderBottom: {
-    zIndex: 1,
-  },
-  sliderTop: {
-    zIndex: 2,
   },
   labelsContainer: {
     flexDirection: 'row',

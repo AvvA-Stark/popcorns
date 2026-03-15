@@ -180,10 +180,33 @@ export default function DiscoveryScreen() {
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
-          moviesData = moviesData.filter(movie => {
-            const providers = movie.watchProviders?.results?.[region];
-            return providers && Object.keys(providers).length > 0;
+          // Debug: log first movie's watch providers structure
+          if (moviesData.length > 0) {
+            const firstMovie = moviesData[0] as any;
+            console.log('🔍 Debug - First movie watchProviders:', JSON.stringify(firstMovie.watchProviders, null, 2));
+            console.log(`🔍 Debug - Checking region: ${region}`);
+          }
+          
+          moviesData = moviesData.filter((movie: any) => {
+            // Check all possible paths for watch providers
+            const providersResults = movie.watchProviders?.results?.[region];
+            const providersDirect = movie.watchProviders?.[region];
+            const providersAlt = movie['watch/providers']?.[region];
+            
+            const providers = providersResults || providersDirect || providersAlt;
+            
+            // A movie is available if it has any provider type (flatrate, rent, or buy)
+            if (!providers) return false;
+            
+            const hasProviders = 
+              (providers.flatrate && providers.flatrate.length > 0) ||
+              (providers.rent && providers.rent.length > 0) ||
+              (providers.buy && providers.buy.length > 0);
+            
+            return hasProviders;
           });
+          
+          console.log(`✅ After region filter: ${moviesData.length} movies available in ${region}`);
         }
         
         setHasMore(page < response.total_pages && response.total_pages > 0);
@@ -605,18 +628,22 @@ export default function DiscoveryScreen() {
                   fromValue={tempFilters.yearFrom || 1900}
                   toValue={tempFilters.yearTo || new Date().getFullYear()}
                   step={1}
-                  onFromChange={(value) =>
+                  onFromChange={(value) => {
+                    const currentYear = new Date().getFullYear();
                     setTempFilters((prev) => ({
                       ...prev,
-                      yearFrom: value > 1900 ? value : undefined,
-                    }))
-                  }
-                  onToChange={(value) =>
+                      // Only set if not the full range
+                      yearFrom: value === 1900 && (prev.yearTo === currentYear || !prev.yearTo) ? undefined : value,
+                    }));
+                  }}
+                  onToChange={(value) => {
+                    const currentYear = new Date().getFullYear();
                     setTempFilters((prev) => ({
                       ...prev,
-                      yearTo: value < new Date().getFullYear() ? value : undefined,
-                    }))
-                  }
+                      // Only set if not the full range
+                      yearTo: value === currentYear && (prev.yearFrom === 1900 || !prev.yearFrom) ? undefined : value,
+                    }));
+                  }}
                   minimumTrackTintColor={Colors.primary}
                   maximumTrackTintColor="#333333"
                   thumbTintColor={Colors.primary}
@@ -712,57 +739,35 @@ export default function DiscoveryScreen() {
               {/* Available in Region */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>Availability</Text>
-                <View style={styles.radioGroup}>
-                  <TouchableOpacity
+                <TouchableOpacity
+                  style={[
+                    styles.toggleOption,
+                    tempFilters.availableInRegion && styles.toggleOptionSelected,
+                  ]}
+                  onPress={() =>
+                    setTempFilters((prev) => ({
+                      ...prev,
+                      availableInRegion: !prev.availableInRegion,
+                    }))
+                  }
+                >
+                  <Text
                     style={[
-                      styles.radioOption,
-                      !tempFilters.availableInRegion && styles.radioOptionSelected,
+                      styles.toggleText,
+                      tempFilters.availableInRegion && styles.toggleTextSelected,
                     ]}
-                    onPress={() =>
-                      setTempFilters((prev) => ({
-                        ...prev,
-                        availableInRegion: false,
-                      }))
-                    }
                   >
-                    <View style={styles.radioButton}>
-                      {!tempFilters.availableInRegion && <View style={styles.radioButtonInner} />}
-                    </View>
-                    <Text
+                    Available in {regionName}
+                  </Text>
+                  <View style={styles.toggleSwitch}>
+                    <View
                       style={[
-                        styles.radioText,
-                        !tempFilters.availableInRegion && styles.radioTextSelected,
+                        styles.toggleKnob,
+                        tempFilters.availableInRegion && styles.toggleKnobActive,
                       ]}
-                    >
-                      All movies
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.radioOption,
-                      tempFilters.availableInRegion && styles.radioOptionSelected,
-                    ]}
-                    onPress={() =>
-                      setTempFilters((prev) => ({
-                        ...prev,
-                        availableInRegion: true,
-                      }))
-                    }
-                  >
-                    <View style={styles.radioButton}>
-                      {tempFilters.availableInRegion && <View style={styles.radioButtonInner} />}
-                    </View>
-                    <Text
-                      style={[
-                        styles.radioText,
-                        tempFilters.availableInRegion && styles.radioTextSelected,
-                      ]}
-                    >
-                      Available in {regionName}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
             </ScrollView>
 
@@ -1012,48 +1017,48 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
-  radioGroup: {
-    gap: 12,
-  },
-  radioOption: {
+  toggleOption: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: Colors.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#333333',
-    gap: 12,
   },
-  radioOptionSelected: {
+  toggleOptionSelected: {
     backgroundColor: Colors.primary + '15',
     borderColor: Colors.primary,
   },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: Colors.textSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioButtonInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
-  },
-  radioText: {
+  toggleText: {
     fontSize: 16,
     color: Colors.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
-  radioTextSelected: {
+  toggleTextSelected: {
     color: Colors.primary,
     fontWeight: '600',
+  },
+  toggleSwitch: {
+    width: 50,
+    height: 28,
+    backgroundColor: '#333333',
+    borderRadius: 14,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleKnob: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.textSecondary,
+  },
+  toggleKnobActive: {
+    backgroundColor: Colors.primary,
+    transform: [{ translateX: 22 }],
   },
   modalActions: {
     flexDirection: 'row',

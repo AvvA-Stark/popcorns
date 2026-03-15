@@ -107,6 +107,7 @@ export interface DiscoverMoviesParams {
   genres?: number[];
   year?: number;
   year_gte?: number;
+  year_lte?: number;
   actor?: number;
   provider?: number;
   rating_gte?: number;
@@ -349,9 +350,13 @@ class TMDBClient {
         queryParams.primary_release_year = params.year;
       }
 
-      // Minimum year filter (e.g., for limiting to recent movies)
+      // Year range filters
       if (params.year_gte) {
         queryParams['primary_release_date.gte'] = `${params.year_gte}-01-01`;
+      }
+      
+      if (params.year_lte) {
+        queryParams['primary_release_date.lte'] = `${params.year_lte}-12-31`;
       }
 
       // Actor filter

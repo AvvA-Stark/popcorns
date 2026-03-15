@@ -433,19 +433,10 @@ export default function MovieDetailScreen() {
                             );
                           } else {
                             console.warn(`Cannot open URL for ${provider.provider_name}: ${homepageUrl}`);
-                            // Fallback to JustWatch
-                            const fallbackUrl = `https://www.justwatch.com/search?q=${encodeURIComponent(movie.title)}`;
-                            Linking.openURL(fallbackUrl).catch(err =>
-                              console.error('Failed to open fallback URL:', err)
-                            );
                           }
                         } else {
                           console.warn(`No homepage URL configured for provider: ${provider.provider_name}`);
-                          // Fallback to JustWatch
-                          const fallbackUrl = `https://www.justwatch.com/search?q=${encodeURIComponent(movie.title)}`;
-                          Linking.openURL(fallbackUrl).catch(err =>
-                            console.error('Failed to open fallback URL:', err)
-                          );
+                          // Do nothing - no competitive linking
                         }
                       }}
                       activeOpacity={0.7}

@@ -32,16 +32,22 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
   return (
     <View style={styles.card}>
-      <CachedImage
-        source={posterUrl}
-        style={styles.poster}
-        contentFit="cover"
-        fallback={
-          <View style={[styles.poster, styles.posterPlaceholder]}>
-            <Text style={styles.placeholderText}>🎬</Text>
-          </View>
-        }
-      />
+      <TouchableOpacity
+        style={styles.posterTouchable}
+        onPress={handleInfoPress}
+        activeOpacity={0.9}
+      >
+        <CachedImage
+          source={posterUrl}
+          style={styles.poster}
+          contentFit="cover"
+          fallback={
+            <View style={[styles.poster, styles.posterPlaceholder]}>
+              <Text style={styles.placeholderText}>🎬</Text>
+            </View>
+          }
+        />
+      </TouchableOpacity>
       
       {/* Info button overlay */}
       <TouchableOpacity
@@ -89,6 +95,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  posterTouchable: {
+    width: '100%',
+    height: '100%',
+  },
   poster: {
     width: '100%',
     height: '100%',
@@ -106,10 +116,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: '50%',
+    height: '35%',
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'flex-end',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 0,
   },
   info: {
     gap: 8,

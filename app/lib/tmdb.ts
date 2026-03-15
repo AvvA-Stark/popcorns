@@ -446,6 +446,21 @@ class TMDBClient {
     const anyVideo = videos.find((v) => v.site === 'YouTube');
     return anyVideo || null;
   }
+
+  /**
+   * Get similar movies for a given movie ID
+   */
+  async getSimilarMovies(movieId: number, page: number = 1): Promise<Movie[]> {
+    try {
+      const response = await this.client.get(`/movie/${movieId}/similar`, {
+        params: { page },
+      });
+      return response.data.results;
+    } catch (error) {
+      console.error(`Error fetching similar movies for ${movieId}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

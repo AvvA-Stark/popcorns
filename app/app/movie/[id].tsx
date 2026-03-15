@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Colors } from '../../constants/Colors';
-import { tmdb, MovieDetailsComplete, CastMember, WatchProvider } from '../../lib/tmdb';
+import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -62,11 +62,16 @@ export default function MovieDetailScreen() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  
+  // Similar Movies state
+  const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
+  const [similarMoviesLoading, setSimilarMoviesLoading] = useState(false);
 
   useEffect(() => {
     loadMovieDetails();
     checkWatchlistStatus();
     loadReviews();
+    loadSimilarMovies();
   }, [id]);
 
   const loadMovieDetails = async () => {
@@ -185,6 +190,18 @@ export default function MovieDetailScreen() {
     }
     
     return <View style={{ flexDirection: 'row' }}>{stars}</View>;
+  };
+
+  const loadSimilarMovies = async () => {
+    try {
+      setSimilarMoviesLoading(true);
+      const similar = await tmdb.getSimilarMovies(Number(id));
+      setSimilarMovies(similar.slice(0, 10)); // Limit to 10 movies
+    } catch (err) {
+      console.error('Error loading similar movies:', err);
+    } finally {
+      setSimilarMoviesLoading(false);
+    }
   };
 
   if (loading) {
@@ -319,6 +336,58 @@ export default function MovieDetailScreen() {
               </ScrollView>
             </View>
           )}
+
+          {/* Similar Movies */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Similar Movies</Text>
+            {similarMoviesLoading ? (
+              <View style={styles.similarMoviesLoading}>
+                <ActivityIndicator size="small" color={Colors.accent} />
+              </View>
+            ) : similarMovies.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.similarMoviesScroll}
+              >
+                {similarMovies.map((similarMovie) => {
+                  const posterUrl = tmdb.getPosterUrl(similarMovie.poster_path, 'medium');
+                  return (
+                    <TouchableOpacity
+                      key={similarMovie.id}
+                      style={styles.similarMovieCard}
+                      onPress={() => {
+                        // Navigate to this movie's detail screen
+                        router.push(`/movie/${similarMovie.id}`);
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      {posterUrl ? (
+                        <Image
+                          source={{ uri: posterUrl }}
+                          style={styles.similarMoviePoster}
+                        />
+                      ) : (
+                        <View style={[styles.similarMoviePoster, styles.similarMoviePosterPlaceholder]}>
+                          <Text style={styles.similarMoviePlaceholderIcon}>🎬</Text>
+                        </View>
+                      )}
+                      <Text style={styles.similarMovieTitle} numberOfLines={2}>
+                        {similarMovie.title}
+                      </Text>
+                      <View style={styles.similarMovieRating}>
+                        <Text style={styles.similarMovieRatingText}>
+                          ⭐ {similarMovie.vote_average.toFixed(1)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            ) : (
+              <Text style={styles.noSimilarMovies}>No similar movies found</Text>
+            )}
+          </View>
 
           {/* Streaming Providers */}
           <View style={styles.section}>
@@ -962,6 +1031,55 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   noReviews: {
+    fontSize: 14,
+    color: Colors.textTertiary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  // Similar Movies styles
+  similarMoviesLoading: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  similarMoviesScroll: {
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+  },
+  similarMovieCard: {
+    width: 120,
+    marginRight: 12,
+  },
+  similarMoviePoster: {
+    width: 120,
+    height: 180,
+    borderRadius: 8,
+    backgroundColor: Colors.surface,
+    marginBottom: 8,
+  },
+  similarMoviePosterPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  similarMoviePlaceholderIcon: {
+    fontSize: 40,
+  },
+  similarMovieTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+    lineHeight: 16,
+  },
+  similarMovieRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  similarMovieRatingText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  noSimilarMovies: {
     fontSize: 14,
     color: Colors.textTertiary,
     fontStyle: 'italic',

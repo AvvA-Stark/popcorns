@@ -230,7 +230,8 @@ class TMDBClient {
    */
   async getWatchProviders(movieId: number, region?: string): Promise<WatchProviders> {
     try {
-      const response = await this.client.get(`/movie/${movieId}/watch/providers`);
+      const params = region ? { watch_region: region } : {};
+      const response = await this.client.get(`/movie/${movieId}/watch/providers`, { params });
       return response.data.results;
     } catch (error) {
       console.error(`Error fetching watch providers for ${movieId}:`, error);

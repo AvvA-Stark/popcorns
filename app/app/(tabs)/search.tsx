@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie } from '../../lib/tmdb';
 import { FontAwesome } from '@expo/vector-icons';
+import { SkeletonSearchCard } from '../../components/SkeletonCard';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -129,9 +130,11 @@ export default function SearchScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={styles.loadingText}>Searching...</Text>
+          <View>
+            <Text style={styles.resultsCount}>Searching...</Text>
+            {[...Array(5)].map((_, index) => (
+              <SkeletonSearchCard key={index} />
+            ))}
           </View>
         )}
 

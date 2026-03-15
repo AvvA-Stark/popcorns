@@ -24,6 +24,7 @@ import { tmdb, Movie, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
 import SwipeStack from '../../components/SwipeStack';
 import { addToWatchlist } from '../../lib/watchlist';
 import { getRegion } from '../../lib/region';
+import SkeletonCard from '../../components/SkeletonCard';
 
 interface Filters {
   genres: number[];
@@ -353,8 +354,18 @@ export default function DiscoveryScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Loading movies...</Text>
+        <View style={styles.header}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>🍿 Popcorns</Text>
+            <View style={styles.filterButton}>
+              <Text style={styles.filterIcon}>⚙️</Text>
+            </View>
+          </View>
+          <Text style={styles.subtitle}>Loading movies...</Text>
+        </View>
+        <View style={styles.skeletonContainer}>
+          <SkeletonCard />
+        </View>
       </View>
     );
   }
@@ -902,5 +913,10 @@ const styles = StyleSheet.create({
     color: Colors.background,
     fontSize: 16,
     fontWeight: '600',
+  },
+  skeletonContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

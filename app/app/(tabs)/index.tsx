@@ -136,7 +136,7 @@ export default function DiscoveryScreen() {
     };
   }, [actorSearchQuery]);
 
-  const loadMovies = async (page: number = 1, randomPageOverride?: number) => {
+  const loadMovies = async (page: number = 1, randomPageOverride?: number, filtersOverride?: Filters) => {
     try {
       if (page === 1) {
         setLoading(true);
@@ -147,14 +147,23 @@ export default function DiscoveryScreen() {
 
       let moviesData;
 
-      if (hasActiveFilters()) {
+      // Use override filters if provided, otherwise use state
+      const activeFilters = filtersOverride !== undefined ? filtersOverride : filters;
+      const hasFilters = 
+        activeFilters.genres.length > 0 ||
+        activeFilters.year !== undefined ||
+        activeFilters.actorId !== undefined ||
+        activeFilters.provider !== undefined ||
+        activeFilters.ratingGte !== undefined;
+
+      if (hasFilters) {
         // Use filters (region from context)
         const response = await tmdb.discoverMovies({
-          genres: filters.genres.length > 0 ? filters.genres : undefined,
-          year: filters.year,
-          actor: filters.actorId,
-          provider: filters.provider,
-          rating_gte: filters.ratingGte,
+          genres: activeFilters.genres.length > 0 ? activeFilters.genres : undefined,
+          year: activeFilters.year,
+          actor: activeFilters.actorId,
+          provider: activeFilters.provider,
+          rating_gte: activeFilters.ratingGte,
           page,
           region, // Pass region from context for provider filtering
         });
@@ -274,10 +283,12 @@ export default function DiscoveryScreen() {
   };
 
   const applyFilters = async () => {
-    setFilters({ ...tempFilters });
+    const newFilters = { ...tempFilters };
+    setFilters(newFilters);
     setFilterModalVisible(false);
     setCurrentPage(1);
-    await loadMovies(1);
+    // Pass newFilters directly to avoid state sync issue
+    await loadMovies(1, undefined, newFilters);
   };
 
   const clearAllFilters = async () => {
@@ -290,7 +301,8 @@ export default function DiscoveryScreen() {
     // Go back to random mode
     const newRandomPage = Math.floor(Math.random() * 100) + 1;
     setRandomPage(newRandomPage);
-    await loadMovies(1, newRandomPage);
+    // Pass emptyFilters directly to ensure immediate application
+    await loadMovies(1, newRandomPage, emptyFilters);
   };
 
   const removeFilter = async (filterKey: keyof Filters) => {
@@ -319,9 +331,11 @@ export default function DiscoveryScreen() {
     if (isEmpty) {
       const newRandomPage = Math.floor(Math.random() * 100) + 1;
       setRandomPage(newRandomPage);
-      await loadMovies(1, newRandomPage);
+      // Pass updatedFilters directly to ensure immediate application
+      await loadMovies(1, newRandomPage, updatedFilters);
     } else {
-      await loadMovies(1);
+      // Pass updatedFilters directly to ensure immediate application
+      await loadMovies(1, undefined, updatedFilters);
     }
   };
 

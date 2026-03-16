@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -52,19 +52,27 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   const superLikeOpacity = useSharedValue(0);
 
   useEffect(() => {
+    console.log('🎬 SwipeTutorialOverlay: useEffect triggered with trigger =', trigger);
+    console.log('🎬 SwipeTutorialOverlay: visible state =', visible);
+    
     if (trigger) {
-      console.log('🎬 Starting tutorial animation...');
+      console.log('🎬 SwipeTutorialOverlay: TRIGGER IS TRUE - Starting tutorial animation...');
       setVisible(true);
+      console.log('🎬 SwipeTutorialOverlay: visible state set to TRUE');
+      
       // Reset all values before starting
       resetAnimation();
+      
       // Small delay to ensure render
       setTimeout(() => {
+        console.log('🎬 SwipeTutorialOverlay: Starting animation after delay');
         startAnimation();
-      }, 50);
+      }, 100); // Increased delay
     }
   }, [trigger]);
 
   const resetAnimation = () => {
+    console.log('🔄 SwipeTutorialOverlay: Resetting animation values');
     // Reset all animated values to initial state
     overlayOpacity.value = 0;
     card1TranslateX.value = 0;
@@ -85,9 +93,15 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   };
 
   const startAnimation = () => {
-    console.log('▶️ Tutorial animation starting...');
+    console.log('▶️ SwipeTutorialOverlay: startAnimation called');
+    console.log('▶️ SwipeTutorialOverlay: overlayOpacity.value =', overlayOpacity.value);
+    
     // Fade in overlay
-    overlayOpacity.value = withTiming(1, { duration: 200 });
+    overlayOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
+      if (finished) {
+        console.log('✅ SwipeTutorialOverlay: Fade-in completed');
+      }
+    });
 
     // 1. Slide cards up from bottom (stacked)
     card1TranslateY.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.cubic) });
@@ -132,6 +146,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
       2800,
       withTiming(0, { duration: 300 }, (finished) => {
         if (finished) {
+          console.log('✅ SwipeTutorialOverlay: Animation complete, calling handleComplete');
           runOnJS(handleComplete)();
         }
       })
@@ -145,6 +160,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   };
 
   const handleDismiss = () => {
+    console.log('👆 SwipeTutorialOverlay: User dismissed tutorial');
     overlayOpacity.value = withTiming(0, { duration: 200 }, (finished) => {
       if (finished) {
         runOnJS(handleComplete)();
@@ -201,68 +217,85 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
     opacity: superLikeOpacity.value,
   }));
 
-  if (!visible) return null;
+  console.log('🎬 SwipeTutorialOverlay: RENDER CALLED - visible =', visible);
+  
+  if (!visible) {
+    console.log('🎬 SwipeTutorialOverlay: Not rendering (visible = false)');
+    return null;
+  }
 
+  console.log('🎬 SwipeTutorialOverlay: RENDERING OVERLAY!');
+
+  // Using Modal to ensure it's truly on top of everything
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={handleDismiss}
-      style={StyleSheet.absoluteFill}
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="none"
+      statusBarTranslucent={true}
     >
-      <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
-        <View style={styles.content}>
-          <Text style={styles.title}>How to Swipe</Text>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={handleDismiss}
+        style={styles.modalContainer}
+      >
+        <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
+          <View style={styles.content}>
+            <Text style={styles.title}>How to Swipe</Text>
 
-          {/* Card Stack */}
-          <View style={styles.cardContainer}>
-            {/* Card 3 (bottom/back) */}
-            <Animated.View style={[styles.card, card3AnimatedStyle]}>
-              <View style={styles.cardContent}>
-                <View style={styles.cardPoster} />
-                <Text style={styles.cardTitle}>Movie 3</Text>
-              </View>
-              <Animated.View style={[styles.label, styles.superLikeLabel, superLikeAnimatedStyle]}>
-                <Text style={styles.labelText}>SUPER LIKE</Text>
+            {/* Card Stack */}
+            <View style={styles.cardContainer}>
+              {/* Card 3 (bottom/back) */}
+              <Animated.View style={[styles.card, card3AnimatedStyle]}>
+                <View style={styles.cardContent}>
+                  <View style={styles.cardPoster} />
+                  <Text style={styles.cardTitle}>Movie 3</Text>
+                </View>
+                <Animated.View style={[styles.label, styles.superLikeLabel, superLikeAnimatedStyle]}>
+                  <Text style={styles.labelText}>SUPER LIKE</Text>
+                </Animated.View>
               </Animated.View>
-            </Animated.View>
 
-            {/* Card 2 (middle) */}
-            <Animated.View style={[styles.card, card2AnimatedStyle]}>
-              <View style={styles.cardContent}>
-                <View style={styles.cardPoster} />
-                <Text style={styles.cardTitle}>Movie 2</Text>
-              </View>
-              <Animated.View style={[styles.label, styles.likeLabel, likeAnimatedStyle]}>
-                <Text style={styles.labelText}>LIKE</Text>
+              {/* Card 2 (middle) */}
+              <Animated.View style={[styles.card, card2AnimatedStyle]}>
+                <View style={styles.cardContent}>
+                  <View style={styles.cardPoster} />
+                  <Text style={styles.cardTitle}>Movie 2</Text>
+                </View>
+                <Animated.View style={[styles.label, styles.likeLabel, likeAnimatedStyle]}>
+                  <Text style={styles.labelText}>LIKE</Text>
+                </Animated.View>
               </Animated.View>
-            </Animated.View>
 
-            {/* Card 1 (top/front) */}
-            <Animated.View style={[styles.card, card1AnimatedStyle]}>
-              <View style={styles.cardContent}>
-                <View style={styles.cardPoster} />
-                <Text style={styles.cardTitle}>Movie 1</Text>
-              </View>
-              <Animated.View style={[styles.label, styles.nopeLabel, nopeAnimatedStyle]}>
-                <Text style={styles.labelText}>NOPE</Text>
+              {/* Card 1 (top/front) */}
+              <Animated.View style={[styles.card, card1AnimatedStyle]}>
+                <View style={styles.cardContent}>
+                  <View style={styles.cardPoster} />
+                  <Text style={styles.cardTitle}>Movie 1</Text>
+                </View>
+                <Animated.View style={[styles.label, styles.nopeLabel, nopeAnimatedStyle]}>
+                  <Text style={styles.labelText}>NOPE</Text>
+                </Animated.View>
               </Animated.View>
-            </Animated.View>
+            </View>
+
+            <Text style={styles.hint}>Tap anywhere to skip</Text>
           </View>
-
-          <Text style={styles.hint}>Tap anywhere to skip</Text>
-        </View>
-      </Animated.View>
-    </TouchableOpacity>
+        </Animated.View>
+      </TouchableOpacity>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+  },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.92)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
   },
   content: {
     alignItems: 'center',

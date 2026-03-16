@@ -249,7 +249,18 @@ export default function SeriesDetailScreen() {
   const trailer = series.videos ? tmdb.getYouTubeTrailer(series.videos) : null;
   const topCast = series.aggregate_credits?.cast.slice(0, 10) || [];
   const providers = series.watchProviders?.[region] || Object.values(series.watchProviders || {})[0];
-  const streamingServices = providers?.flatrate || [];
+  
+  // Combine all provider types (flatrate, rent, buy) for comprehensive display
+  const allProviders = [
+    ...(providers?.flatrate || []),
+    ...(providers?.rent || []),
+    ...(providers?.buy || []),
+  ];
+  
+  // Remove duplicates based on provider_id
+  const streamingServices = allProviders.filter((provider, index, self) =>
+    index === self.findIndex((p) => p.provider_id === provider.provider_id)
+  );
 
   return (
     <View style={styles.container}>

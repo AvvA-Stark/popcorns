@@ -223,19 +223,29 @@ export default function DiscoveryScreen() {
           // Now filter based on the fetched provider data
           const beforeCount = moviesWithProviders.length;
           moviesData = moviesWithProviders.filter((movie: any) => {
-            const providers = movie.watchProviders?.[region];
+            const regionProviders = movie.watchProviders?.[region];
             
-            if (!providers) {
+            // Ensure we have provider data for this region
+            if (!regionProviders || typeof regionProviders !== 'object') {
+              if (__DEV__) {
+                console.log(`❌ ${movie.title}: No provider data for region ${region}`);
+              }
               return false;
             }
             
-            // A movie is available if it has any provider type (flatrate, rent, or buy)
-            const hasProviders = 
-              (providers.flatrate && providers.flatrate.length > 0) ||
-              (providers.rent && providers.rent.length > 0) ||
-              (providers.buy && providers.buy.length > 0);
+            // Check all provider types (flatrate, rent, buy)
+            const hasFlatrate = Array.isArray(regionProviders.flatrate) && regionProviders.flatrate.length > 0;
+            const hasRent = Array.isArray(regionProviders.rent) && regionProviders.rent.length > 0;
+            const hasBuy = Array.isArray(regionProviders.buy) && regionProviders.buy.length > 0;
             
-            return hasProviders;
+            const hasAnyProvider = hasFlatrate || hasRent || hasBuy;
+            
+            // Debug logging for movies that don't pass
+            if (__DEV__ && !hasAnyProvider) {
+              console.log(`❌ ${movie.title}: No streaming options (flatrate=${hasFlatrate}, rent=${hasRent}, buy=${hasBuy})`);
+            }
+            
+            return hasAnyProvider;
           });
           
           console.log(`✅ After region filter: ${moviesData.length}/${beforeCount} movies available in ${region}`);

@@ -446,7 +446,7 @@ export default function DiscoveryScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={styles.stickyHeader}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>🍿 Popcorns</Text>
             <View style={styles.filterButton}>
@@ -455,8 +455,10 @@ export default function DiscoveryScreen() {
           </View>
           <Text style={styles.subtitle}>Loading movies...</Text>
         </View>
-        <View style={styles.skeletonContainer}>
-          <SkeletonCard />
+        <View style={styles.contentArea}>
+          <View style={styles.skeletonContainer}>
+            <SkeletonCard />
+          </View>
         </View>
       </View>
     );
@@ -472,7 +474,8 @@ export default function DiscoveryScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      {/* Sticky header - always visible at top */}
+      <View style={styles.stickyHeader}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>🍿 Popcorns</Text>
           <TouchableOpacity onPress={openFilterModal} style={styles.filterButton}>
@@ -482,7 +485,7 @@ export default function DiscoveryScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Active filter pills moved to top */}
+        {/* Active filter pills */}
         {hasActiveFilters() && (
           <ScrollView
             horizontal
@@ -552,12 +555,18 @@ export default function DiscoveryScreen() {
         )}
       </View>
 
-      <SwipeStack
-        movies={movies}
-        onSwipeLeft={handleSwipeLeft}
-        onSwipeRight={handleSwipeRight}
-        onSwipeUp={handleSwipeUp}
-      />
+      {/* Swipe content area - fills remaining space */}
+      <View style={[
+        styles.contentArea,
+        hasActiveFilters() && styles.contentAreaWithFilters
+      ]}>
+        <SwipeStack
+          movies={movies}
+          onSwipeLeft={handleSwipeLeft}
+          onSwipeRight={handleSwipeRight}
+          onSwipeUp={handleSwipeUp}
+        />
+      </View>
 
       <View style={styles.footer}>
         {loadingMore ? (
@@ -805,10 +814,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  header: {
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: Colors.background,
     paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 12,
     paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222222',
+  },
+  contentArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 120 : 80, // Space for sticky header
+  },
+  contentAreaWithFilters: {
+    paddingTop: Platform.OS === 'ios' ? 170 : 130, // Extra space when filters are shown
   },
   titleRow: {
     flexDirection: 'row',
@@ -1108,5 +1132,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 40,
   },
 });

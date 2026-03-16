@@ -51,6 +51,7 @@ export default function TabsLayout() {
         options={{
           title: 'Discover',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🎬</Text>,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -58,6 +59,7 @@ export default function TabsLayout() {
         options={{
           title: 'Series',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📺</Text>,
+          headerShown: false,
         }}
       />
       <Tabs.Screen

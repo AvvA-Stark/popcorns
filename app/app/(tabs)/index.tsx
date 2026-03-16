@@ -446,13 +446,14 @@ export default function DiscoveryScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.staticFilterHeader}>
-          <View style={styles.filterBar}>
-            <TouchableOpacity style={styles.filterButtonCompact} disabled>
+        <View style={styles.stickyHeader}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>🍿 Popcorns</Text>
+            <View style={styles.filterButton}>
               <Text style={styles.filterIcon}>⚙️</Text>
-            </TouchableOpacity>
-            <Text style={styles.loadingText}>Loading movies...</Text>
+            </View>
           </View>
+          <Text style={styles.subtitle}>Loading movies...</Text>
         </View>
         <View style={styles.contentArea}>
           <View style={styles.skeletonContainer}>
@@ -473,91 +474,92 @@ export default function DiscoveryScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Static filter header - clean top bar */}
-      <View style={styles.staticFilterHeader}>
-        <View style={styles.filterBar}>
-          {/* Filter/Settings button */}
-          <TouchableOpacity onPress={openFilterModal} style={styles.filterButtonCompact}>
+      {/* Sticky header - always visible at top */}
+      <View style={styles.stickyHeader}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>🍿 Popcorns</Text>
+          <TouchableOpacity onPress={openFilterModal} style={styles.filterButton}>
             <Text style={styles.filterIcon}>
               {hasActiveFilters() ? '🔍' : '⚙️'}
             </Text>
           </TouchableOpacity>
-
-          {/* Active filter pills */}
-          {hasActiveFilters() ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.filterPillsScroll}
-              contentContainerStyle={styles.filterPillsContent}
-            >
-              {filters.genres.length > 0 && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('genres')}
-                >
-                  <Text style={styles.filterPillText}>
-                    {filters.genres.map((id) => genres.find((g) => g.id === id)?.name).filter(Boolean).join(', ')}
-                  </Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-              {(filters.yearFrom || filters.yearTo) && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('yearFrom')}
-                >
-                  <Text style={styles.filterPillText}>
-                    Year: {filters.yearFrom || '—'} - {filters.yearTo || '—'}
-                  </Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-              {filters.actorName && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('actorId')}
-                >
-                  <Text style={styles.filterPillText}>Actor: {filters.actorName}</Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-              {filters.providerName && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('provider')}
-                >
-                  <Text style={styles.filterPillText}>{filters.providerName}</Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-              {filters.ratingGte !== undefined && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('ratingGte')}
-                >
-                  <Text style={styles.filterPillText}>Rating ≥ {filters.ratingGte.toFixed(1)}</Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-              {filters.availableInRegion && (
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() => removeFilter('availableInRegion')}
-                >
-                  <Text style={styles.filterPillText}>Available in {regionName}</Text>
-                  <Text style={styles.filterPillX}>✕</Text>
-                </TouchableOpacity>
-              )}
-            </ScrollView>
-          ) : (
-            <Text style={styles.noFiltersText}>Tap ⚙️ to add filters</Text>
-          )}
         </View>
+
+        {/* Active filter pills */}
+        {hasActiveFilters() && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterPillsContainer}
+            contentContainerStyle={styles.filterPillsContent}
+          >
+            {filters.genres.length > 0 && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('genres')}
+              >
+                <Text style={styles.filterPillText}>
+                  {filters.genres.map((id) => genres.find((g) => g.id === id)?.name).filter(Boolean).join(', ')}
+                </Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {(filters.yearFrom || filters.yearTo) && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('yearFrom')}
+              >
+                <Text style={styles.filterPillText}>
+                  Year: {filters.yearFrom || '—'} - {filters.yearTo || '—'}
+                </Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.actorName && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('actorId')}
+              >
+                <Text style={styles.filterPillText}>Actor: {filters.actorName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.providerName && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('provider')}
+              >
+                <Text style={styles.filterPillText}>{filters.providerName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.ratingGte !== undefined && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('ratingGte')}
+              >
+                <Text style={styles.filterPillText}>Rating ≥ {filters.ratingGte.toFixed(1)}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.availableInRegion && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('availableInRegion')}
+              >
+                <Text style={styles.filterPillText}>Available in {regionName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        )}
       </View>
 
       {/* Swipe content area - fills remaining space */}
-      <View style={styles.contentArea}>
+      <View style={[
+        styles.contentArea,
+        hasActiveFilters() && styles.contentAreaWithFilters
+      ]}>
         <SwipeStack
           movies={movies}
           onSwipeLeft={handleSwipeLeft}
@@ -812,44 +814,55 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  staticFilterHeader: {
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     backgroundColor: Colors.background,
     paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#222222',
   },
-  filterBar: {
+  contentArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 120 : 80, // Space for sticky header
+  },
+  contentAreaWithFilters: {
+    paddingTop: Platform.OS === 'ios' ? 170 : 130, // Extra space when filters are shown
+  },
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'center',
   },
-  filterButtonCompact: {
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  filterButton: {
+    marginLeft: 12,
     padding: 8,
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#333333',
   },
   filterIcon: {
-    fontSize: 20,
+    fontSize: 24,
   },
-  filterPillsScroll: {
-    flex: 1,
+  subtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  filterPillsContainer: {
+    marginTop: 16,
+    maxHeight: 40,
   },
   filterPillsContent: {
     gap: 8,
-    paddingRight: 16,
-  },
-  noFiltersText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    flex: 1,
-  },
-  contentArea: {
-    flex: 1,
   },
   filterPill: {
     flexDirection: 'row',

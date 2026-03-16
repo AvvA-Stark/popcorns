@@ -8,15 +8,26 @@ import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
-import { getWatchlist, removeFromWatchlist, WatchlistItem } from '../../lib/watchlist';
+import { getWatchlist, removeFromWatchlist, WatchlistItem, initializeSync, fullSync } from '../../lib/watchlist';
 import WatchlistCard from '../../components/WatchlistCard';
 import { useToast } from '../../lib/toast';
+import { logSupabaseStatus } from '../../lib/supabase';
 
 export default function WatchlistScreen() {
   const { showToast } = useToast();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Initialize Supabase sync on component mount (one-time)
+  useEffect(() => {
+    logSupabaseStatus();
+    initializeSync().then(() => {
+      console.log('✅ Supabase sync initialized');
+    }).catch(err => {
+      console.error('⚠️ Supabase sync initialization failed:', err);
+    });
+  }, []);
 
   // Load watchlist when screen comes into focus
   useFocusEffect(
@@ -39,6 +50,10 @@ export default function WatchlistScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    // Trigger full sync on pull-to-refresh
+    await fullSync().catch(err => {
+      console.error('Sync failed during refresh:', err);
+    });
     await loadWatchlist();
     setRefreshing(false);
   };

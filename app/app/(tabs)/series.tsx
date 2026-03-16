@@ -449,8 +449,19 @@ export default function SeriesScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.skeletonContainer}>
-          <SkeletonCard />
+        <View style={styles.stickyHeader}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>📺 Series</Text>
+            <View style={styles.filterButton}>
+              <Text style={styles.filterIcon}>⚙️</Text>
+            </View>
+          </View>
+          <Text style={styles.subtitle}>Loading TV series...</Text>
+        </View>
+        <View style={styles.contentArea}>
+          <View style={styles.skeletonContainer}>
+            <SkeletonCard />
+          </View>
         </View>
       </View>
     );
@@ -466,8 +477,92 @@ export default function SeriesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Swipe content area - fills full screen */}
-      <View style={styles.contentArea}>
+      {/* Sticky header - always visible at top */}
+      <View style={styles.stickyHeader}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>📺 Series</Text>
+          <TouchableOpacity onPress={openFilterModal} style={styles.filterButton}>
+            <Text style={styles.filterIcon}>
+              {hasActiveFilters() ? '🔍' : '⚙️'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Active filter pills */}
+        {hasActiveFilters() && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterPillsContainer}
+            contentContainerStyle={styles.filterPillsContent}
+          >
+            {filters.genres.length > 0 && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('genres')}
+              >
+                <Text style={styles.filterPillText}>
+                  {filters.genres.map((id) => genres.find((g) => g.id === id)?.name).filter(Boolean).join(', ')}
+                </Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {(filters.yearFrom || filters.yearTo) && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('yearFrom')}
+              >
+                <Text style={styles.filterPillText}>
+                  Year: {filters.yearFrom || '—'} - {filters.yearTo || '—'}
+                </Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.actorName && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('actorId')}
+              >
+                <Text style={styles.filterPillText}>Actor: {filters.actorName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.providerName && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('provider')}
+              >
+                <Text style={styles.filterPillText}>{filters.providerName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.ratingGte !== undefined && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('ratingGte')}
+              >
+                <Text style={styles.filterPillText}>Rating ≥ {filters.ratingGte.toFixed(1)}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+            {filters.availableInRegion && (
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => removeFilter('availableInRegion')}
+              >
+                <Text style={styles.filterPillText}>Available in {regionName}</Text>
+                <Text style={styles.filterPillX}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Swipe content area - fills remaining space */}
+      <View style={[
+        styles.contentArea,
+        hasActiveFilters() && styles.contentAreaWithFilters
+      ]}>
         <SwipeStack
           movies={series}
           onSwipeLeft={handleSwipeLeft}
@@ -722,8 +817,69 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  stickyHeader: {
+    backgroundColor: Colors.background,
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222222',
+  },
   contentArea: {
     flex: 1,
+  },
+  contentAreaWithFilters: {
+    // No additional padding needed - filter pills are part of header
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  filterButton: {
+    marginLeft: 12,
+    padding: 8,
+  },
+  filterIcon: {
+    fontSize: 24,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  filterPillsContainer: {
+    marginTop: 16,
+    maxHeight: 40,
+  },
+  filterPillsContent: {
+    gap: 8,
+  },
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary + '20',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 8,
+  },
+  filterPillText: {
+    color: Colors.primary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  filterPillX: {
+    color: Colors.primary,
+    fontSize: 14,
+    marginLeft: 6,
+    fontWeight: 'bold',
   },
   loadingText: {
     fontSize: 16,

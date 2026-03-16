@@ -818,13 +818,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   stickyHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
     backgroundColor: Colors.background,
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
@@ -832,10 +827,9 @@ const styles = StyleSheet.create({
   },
   contentArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 120 : 80, // Space for sticky header
   },
   contentAreaWithFilters: {
-    paddingTop: Platform.OS === 'ios' ? 170 : 130, // Extra space when filters are shown
+    // No extra padding needed - header scrolls with content
   },
   titleRow: {
     flexDirection: 'row',

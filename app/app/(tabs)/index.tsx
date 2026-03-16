@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   },
   stickyHeader: {
     backgroundColor: Colors.background,
-    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 12,
     paddingHorizontal: 20,
     borderBottomWidth: 1,

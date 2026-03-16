@@ -27,6 +27,7 @@ import SkeletonCard from '../../components/SkeletonCard';
 import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
+import SwipeTutorialOverlay from '../../components/SwipeTutorialOverlay';
 
 interface Filters {
   genres: number[];
@@ -808,6 +809,9 @@ export default function DiscoveryScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Tutorial Overlay - shows once on first run */}
+      <SwipeTutorialOverlay />
     </View>
   );
 }

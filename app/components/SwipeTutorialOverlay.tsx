@@ -1,0 +1,328 @@
+/**
+ * SwipeTutorialOverlay Component
+ * First-run animation that demonstrates swipe gestures
+ * Shows once per install, can be dismissed early
+ */
+
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  withDelay,
+  runOnJS,
+  Easing,
+} from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '../constants/Colors';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.35; // Smaller cards for tutorial
+const CARD_HEIGHT = CARD_WIDTH * 1.5;
+const TUTORIAL_KEY = '@popcorns_tutorial_shown';
+
+interface SwipeTutorialOverlayProps {
+  onComplete?: () => void;
+}
+
+export default function SwipeTutorialOverlay({ onComplete }: SwipeTutorialOverlayProps) {
+  const [visible, setVisible] = useState(false);
+  const overlayOpacity = useSharedValue(0);
+
+  // Card positions and rotations
+  const card1TranslateX = useSharedValue(0);
+  const card1TranslateY = useSharedValue(SCREEN_HEIGHT);
+  const card1Rotate = useSharedValue(0);
+  const card1Opacity = useSharedValue(1);
+
+  const card2TranslateX = useSharedValue(0);
+  const card2TranslateY = useSharedValue(SCREEN_HEIGHT);
+  const card2Rotate = useSharedValue(0);
+  const card2Opacity = useSharedValue(1);
+
+  const card3TranslateX = useSharedValue(0);
+  const card3TranslateY = useSharedValue(SCREEN_HEIGHT);
+  const card3Rotate = useSharedValue(0);
+  const card3Opacity = useSharedValue(1);
+
+  // Label opacities
+  const nopeOpacity = useSharedValue(0);
+  const likeOpacity = useSharedValue(0);
+  const superLikeOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    checkAndShowTutorial();
+  }, []);
+
+  const checkAndShowTutorial = async () => {
+    try {
+      const hasShown = await AsyncStorage.getItem(TUTORIAL_KEY);
+      if (!hasShown) {
+        setVisible(true);
+        startAnimation();
+        // Mark as shown
+        await AsyncStorage.setItem(TUTORIAL_KEY, 'true');
+      }
+    } catch (error) {
+      console.error('Error checking tutorial status:', error);
+    }
+  };
+
+  const startAnimation = () => {
+    // Fade in overlay
+    overlayOpacity.value = withTiming(1, { duration: 200 });
+
+    // 1. Slide cards up from bottom (stacked)
+    card1TranslateY.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.cubic) });
+    card2TranslateY.value = withTiming(-10, { duration: 500, easing: Easing.out(Easing.cubic) });
+    card3TranslateY.value = withTiming(-20, { duration: 500, easing: Easing.out(Easing.cubic) });
+
+    // 2. After 800ms, swipe card 1 left (NOPE)
+    card1TranslateX.value = withDelay(
+      800,
+      withTiming(-SCREEN_WIDTH * 1.2, { duration: 400, easing: Easing.inOut(Easing.ease) })
+    );
+    card1Rotate.value = withDelay(800, withTiming(-15, { duration: 400 }));
+    nopeOpacity.value = withDelay(800, withTiming(1, { duration: 200 }));
+    card1Opacity.value = withDelay(1100, withTiming(0, { duration: 200 }));
+
+    // Move card 2 to front position
+    card2TranslateY.value = withDelay(1200, withTiming(0, { duration: 300 }));
+    card3TranslateY.value = withDelay(1200, withTiming(-10, { duration: 300 }));
+
+    // 3. After 1500ms, swipe card 2 right (LIKE)
+    card2TranslateX.value = withDelay(
+      1500,
+      withTiming(SCREEN_WIDTH * 1.2, { duration: 400, easing: Easing.inOut(Easing.ease) })
+    );
+    card2Rotate.value = withDelay(1500, withTiming(15, { duration: 400 }));
+    likeOpacity.value = withDelay(1500, withTiming(1, { duration: 200 }));
+    card2Opacity.value = withDelay(1800, withTiming(0, { duration: 200 }));
+
+    // Move card 3 to front position
+    card3TranslateY.value = withDelay(1900, withTiming(0, { duration: 300 }));
+
+    // 4. After 2200ms, swipe card 3 up (SUPER LIKE)
+    card3TranslateY.value = withDelay(
+      2200,
+      withTiming(-SCREEN_HEIGHT, { duration: 400, easing: Easing.inOut(Easing.ease) })
+    );
+    superLikeOpacity.value = withDelay(2200, withTiming(1, { duration: 200 }));
+    card3Opacity.value = withDelay(2500, withTiming(0, { duration: 200 }));
+
+    // 5. Fade out overlay after 2800ms
+    overlayOpacity.value = withDelay(
+      2800,
+      withTiming(0, { duration: 300 }, (finished) => {
+        if (finished) {
+          runOnJS(handleComplete)();
+        }
+      })
+    );
+  };
+
+  const handleComplete = () => {
+    setVisible(false);
+    onComplete?.();
+  };
+
+  const handleDismiss = () => {
+    overlayOpacity.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) {
+        runOnJS(handleComplete)();
+      }
+    });
+  };
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: overlayOpacity.value,
+  }));
+
+  const card1AnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: card1TranslateX.value },
+        { translateY: card1TranslateY.value },
+        { rotate: `${card1Rotate.value}deg` },
+      ],
+      opacity: card1Opacity.value,
+    };
+  });
+
+  const card2AnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: card2TranslateX.value },
+        { translateY: card2TranslateY.value },
+        { rotate: `${card2Rotate.value}deg` },
+      ],
+      opacity: card2Opacity.value,
+    };
+  });
+
+  const card3AnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: card3TranslateX.value },
+        { translateY: card3TranslateY.value },
+        { rotate: `${card3Rotate.value}deg` },
+      ],
+      opacity: card3Opacity.value,
+    };
+  });
+
+  const nopeAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: nopeOpacity.value,
+  }));
+
+  const likeAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: likeOpacity.value,
+  }));
+
+  const superLikeAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: superLikeOpacity.value,
+  }));
+
+  if (!visible) return null;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={handleDismiss}
+      style={StyleSheet.absoluteFill}
+    >
+      <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
+        <View style={styles.content}>
+          <Text style={styles.title}>How to Swipe</Text>
+
+          {/* Card Stack */}
+          <View style={styles.cardContainer}>
+            {/* Card 3 (bottom/back) */}
+            <Animated.View style={[styles.card, card3AnimatedStyle]}>
+              <View style={styles.cardContent}>
+                <View style={styles.cardPoster} />
+                <Text style={styles.cardTitle}>Movie 3</Text>
+              </View>
+              <Animated.View style={[styles.label, styles.superLikeLabel, superLikeAnimatedStyle]}>
+                <Text style={styles.labelText}>SUPER LIKE</Text>
+              </Animated.View>
+            </Animated.View>
+
+            {/* Card 2 (middle) */}
+            <Animated.View style={[styles.card, card2AnimatedStyle]}>
+              <View style={styles.cardContent}>
+                <View style={styles.cardPoster} />
+                <Text style={styles.cardTitle}>Movie 2</Text>
+              </View>
+              <Animated.View style={[styles.label, styles.likeLabel, likeAnimatedStyle]}>
+                <Text style={styles.labelText}>LIKE</Text>
+              </Animated.View>
+            </Animated.View>
+
+            {/* Card 1 (top/front) */}
+            <Animated.View style={[styles.card, card1AnimatedStyle]}>
+              <View style={styles.cardContent}>
+                <View style={styles.cardPoster} />
+                <Text style={styles.cardTitle}>Movie 1</Text>
+              </View>
+              <Animated.View style={[styles.label, styles.nopeLabel, nopeAnimatedStyle]}>
+                <Text style={styles.labelText}>NOPE</Text>
+              </Animated.View>
+            </Animated.View>
+          </View>
+
+          <Text style={styles.hint}>Tap anywhere to skip</Text>
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  content: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 60,
+    letterSpacing: 1,
+  },
+  cardContainer: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    position: 'relative',
+    marginBottom: 60,
+  },
+  card: {
+    position: 'absolute',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardPoster: {
+    width: '100%',
+    height: '70%',
+    backgroundColor: Colors.primary + '30',
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    padding: 12,
+    textAlign: 'center',
+  },
+  label: {
+    position: 'absolute',
+    top: 30,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 3,
+  },
+  nopeLabel: {
+    left: 20,
+    borderColor: Colors.dislike,
+    transform: [{ rotate: '-15deg' }],
+  },
+  likeLabel: {
+    right: 20,
+    borderColor: Colors.like,
+    transform: [{ rotate: '15deg' }],
+  },
+  superLikeLabel: {
+    alignSelf: 'center',
+    borderColor: Colors.superLike,
+  },
+  labelText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    letterSpacing: 1,
+  },
+  hint: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 20,
+  },
+});

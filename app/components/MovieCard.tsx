@@ -5,11 +5,14 @@
 
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../constants/Colors';
 import { Movie, TVSeries } from '../lib/tmdb';
 import { tmdb } from '../lib/tmdb';
 import CachedImage from './CachedImage';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist, MediaType } from '../lib/watchlist';
+import { useToast } from '../lib/toast';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.9;
@@ -26,6 +29,7 @@ function isMovie(item: Movie | TVSeries): item is Movie {
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const posterUrl = tmdb.getPosterUrl(movie.poster_path, 'large');
   const rating = movie.vote_average.toFixed(1);
   
@@ -33,11 +37,64 @@ export default function MovieCard({ movie }: MovieCardProps) {
   const title = isMovie(movie) ? movie.title : movie.name;
   const releaseDate = isMovie(movie) ? movie.release_date : movie.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : 'N/A';
-  const mediaType = isMovie(movie) ? 'movie' : 'series';
+  const mediaType: MediaType = isMovie(movie) ? 'movie' : 'tv';
+
+  // Watchlist state
+  const [inWatchlist, setInWatchlist] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+  // Check watchlist status on mount
+  useEffect(() => {
+    checkWatchlistStatus();
+  }, [movie.id, mediaType]);
+
+  const checkWatchlistStatus = async () => {
+    try {
+      const status = await isInWatchlist(movie.id, mediaType);
+      setInWatchlist(status);
+    } catch (error) {
+      console.error('Error checking watchlist status:', error);
+    }
+  };
 
   const handleInfoPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/${mediaType}/${movie.id}` as any);
+    router.push(`/${mediaType === 'movie' ? 'movie' : 'series'}/${movie.id}` as any);
+  };
+
+  const handleWatchlistToggle = async () => {
+    if (watchlistLoading) return;
+
+    setWatchlistLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      if (inWatchlist) {
+        // Remove from watchlist
+        await removeFromWatchlist(movie.id, mediaType);
+        setInWatchlist(false);
+        showToast({
+          message: `Removed "${title}" from watchlist`,
+          type: 'info',
+        });
+      } else {
+        // Add to watchlist
+        await addToWatchlist(movie, 'normal', mediaType);
+        setInWatchlist(true);
+        showToast({
+          message: `Added "${title}" to watchlist`,
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      showToast({
+        message: 'Failed to update watchlist',
+        type: 'error',
+      });
+    } finally {
+      setWatchlistLoading(false);
+    }
   };
 
   return (
@@ -59,16 +116,36 @@ export default function MovieCard({ movie }: MovieCardProps) {
         />
       </TouchableOpacity>
       
-      {/* Info button overlay */}
-      <TouchableOpacity
-        style={styles.infoButton}
-        onPress={handleInfoPress}
-        activeOpacity={0.8}
-      >
-        <View style={styles.infoIconContainer}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-        </View>
-      </TouchableOpacity>
+      {/* Action buttons overlay */}
+      <View style={styles.actionButtons}>
+        {/* Watchlist button */}
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleWatchlistToggle}
+          activeOpacity={0.8}
+          disabled={watchlistLoading}
+        >
+          <View style={[
+            styles.actionIconContainer,
+            inWatchlist && styles.watchlistActiveContainer
+          ]}>
+            <Text style={styles.actionIcon}>
+              {inWatchlist ? '❤️' : '🤍'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        
+        {/* Info button */}
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleInfoPress}
+          activeOpacity={0.8}
+        >
+          <View style={styles.actionIconContainer}>
+            <Text style={styles.actionIcon}>ℹ️</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
       
       <View style={styles.gradient}>
         <View style={styles.info}>
@@ -168,13 +245,18 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 20,
   },
-  infoButton: {
+  actionButtons: {
     position: 'absolute',
     top: 16,
     right: 16,
+    flexDirection: 'row',
+    gap: 8,
     zIndex: 10,
   },
-  infoIconContainer: {
+  actionButton: {
+    // Container for individual button
+  },
+  actionIconContainer: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -184,7 +266,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  infoIcon: {
+  watchlistActiveContainer: {
+    backgroundColor: 'rgba(255, 0, 80, 0.2)',
+    borderColor: 'rgba(255, 0, 80, 0.5)',
+  },
+  actionIcon: {
     fontSize: 20,
   },
 });

@@ -16,18 +16,23 @@ import {
   ListRenderItem,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie } from '../../lib/tmdb';
 import { FontAwesome } from '@expo/vector-icons';
 import { SkeletonSearchCard } from '../../components/SkeletonCard';
 import CachedImage from '../../components/CachedImage';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
+import { useToast } from '../../lib/toast';
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [watchlistStatus, setWatchlistStatus] = useState<{ [key: number]: boolean }>({});
 
   // Debounced search effect
   useEffect(() => {
@@ -44,6 +49,20 @@ export default function SearchScreen() {
         setResults(movies);
         setHasSearched(true);
         console.log(`🔍 Found ${movies.length} results for "${query}"`);
+        
+        // Check watchlist status for all results
+        const statusChecks = await Promise.all(
+          movies.map(async (movie) => {
+            const inWatchlist = await isInWatchlist(movie.id, 'movie');
+            return { id: movie.id, inWatchlist };
+          })
+        );
+        
+        const statusMap: { [key: number]: boolean } = {};
+        statusChecks.forEach(({ id, inWatchlist }) => {
+          statusMap[id] = inWatchlist;
+        });
+        setWatchlistStatus(statusMap);
       } catch (error) {
         console.error('Error searching movies:', error);
         setResults([]);
@@ -60,9 +79,43 @@ export default function SearchScreen() {
     router.push(`/movie/${movieId}`);
   };
 
+  const handleWatchlistToggle = async (movie: Movie, event: any) => {
+    // Stop event propagation to prevent card press
+    event.stopPropagation();
+    
+    const inWatchlist = watchlistStatus[movie.id] || false;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      if (inWatchlist) {
+        await removeFromWatchlist(movie.id, 'movie');
+        setWatchlistStatus(prev => ({ ...prev, [movie.id]: false }));
+        showToast({
+          message: `Removed "${movie.title}" from watchlist`,
+          type: 'info',
+        });
+      } else {
+        await addToWatchlist(movie, 'normal', 'movie');
+        setWatchlistStatus(prev => ({ ...prev, [movie.id]: true }));
+        showToast({
+          message: `Added "${movie.title}" to watchlist`,
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      showToast({
+        message: 'Failed to update watchlist',
+        type: 'error',
+      });
+    }
+  };
+
   const renderMovieCard: ListRenderItem<Movie> = ({ item: movie }) => {
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+    const inWatchlist = watchlistStatus[movie.id] || false;
 
     return (
       <Pressable
@@ -80,6 +133,22 @@ export default function SearchScreen() {
               </View>
             }
           />
+          
+          {/* Watchlist button overlay */}
+          <TouchableOpacity
+            style={styles.watchlistButton}
+            onPress={(e) => handleWatchlistToggle(movie, e)}
+            activeOpacity={0.8}
+          >
+            <View style={[
+              styles.watchlistIconContainer,
+              inWatchlist && styles.watchlistActive
+            ]}>
+              <Text style={styles.watchlistIcon}>
+                {inWatchlist ? '❤️' : '🤍'}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.info}>
@@ -305,6 +374,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     marginRight: 12,
+    position: 'relative',
+  },
+  watchlistButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    zIndex: 10,
+  },
+  watchlistIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  watchlistActive: {
+    backgroundColor: 'rgba(255, 0, 80, 0.2)',
+    borderColor: 'rgba(255, 0, 80, 0.5)',
+  },
+  watchlistIcon: {
+    fontSize: 16,
   },
   poster: {
     width: '100%',

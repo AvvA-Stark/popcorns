@@ -158,7 +158,7 @@ export default function WatchlistScreen() {
       <FlatList
         data={watchlist}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => `${item.id}-${item.mediaType}-${item.addedAt}`}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}

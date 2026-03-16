@@ -87,7 +87,28 @@ export async function getWatchlist(): Promise<WatchlistItem[]> {
   try {
     const data = await AsyncStorage.getItem(WATCHLIST_KEY);
     if (!data) return [];
-    return JSON.parse(data);
+    
+    const watchlist = JSON.parse(data);
+    
+    // Deduplicate: keep only the first occurrence of each id+mediaType combination
+    const seen = new Set<string>();
+    const deduped = watchlist.filter((item: WatchlistItem) => {
+      const key = `${item.id}-${item.mediaType}`;
+      if (seen.has(key)) {
+        console.log(`⚠️ Found duplicate watchlist entry: ${item.title} (${key})`);
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+    
+    // If duplicates were found, save the cleaned list back to storage
+    if (deduped.length < watchlist.length) {
+      console.log(`🧹 Removed ${watchlist.length - deduped.length} duplicate(s) from watchlist`);
+      await AsyncStorage.setItem(WATCHLIST_KEY, JSON.stringify(deduped));
+    }
+    
+    return deduped;
   } catch (error) {
     console.error('Error loading watchlist:', error);
     return [];

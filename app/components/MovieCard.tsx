@@ -1,13 +1,13 @@
 /**
  * MovieCard Component
- * Swipeable card for displaying movie information
+ * Swipeable card for displaying movie or TV series information
  */
 
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../constants/Colors';
-import { Movie } from '../lib/tmdb';
+import { Movie, TVSeries } from '../lib/tmdb';
 import { tmdb } from '../lib/tmdb';
 import CachedImage from './CachedImage';
 
@@ -16,18 +16,28 @@ const CARD_WIDTH = SCREEN_WIDTH * 0.9;
 const CARD_HEIGHT = CARD_WIDTH * 1.5;
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: Movie | TVSeries;
+}
+
+// Type guard to check if item is a Movie
+function isMovie(item: Movie | TVSeries): item is Movie {
+  return 'title' in item;
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
   const router = useRouter();
   const posterUrl = tmdb.getPosterUrl(movie.poster_path, 'large');
   const rating = movie.vote_average.toFixed(1);
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
+  
+  // Handle both Movie and TVSeries types
+  const title = isMovie(movie) ? movie.title : movie.name;
+  const releaseDate = isMovie(movie) ? movie.release_date : movie.first_air_date;
+  const year = releaseDate ? new Date(releaseDate).getFullYear() : 'N/A';
+  const mediaType = isMovie(movie) ? 'movie' : 'series';
 
   const handleInfoPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/movie/${movie.id}`);
+    router.push(`/${mediaType}/${movie.id}` as any);
   };
 
   return (
@@ -63,7 +73,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
       <View style={styles.gradient}>
         <View style={styles.info}>
           <Text style={styles.title} numberOfLines={2}>
-            {movie.title}
+            {title}
           </Text>
           
           <View style={styles.metaRow}>

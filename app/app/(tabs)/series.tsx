@@ -1,6 +1,6 @@
 /**
- * Discovery Screen (Main Swipe Screen)
- * Tinder-style movie swiping interface with comprehensive filters
+ * Series Screen (Main Swipe Screen for TV Series)
+ * Tinder-style TV series swiping interface with comprehensive filters
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -40,10 +40,10 @@ interface Filters {
   availableInRegion?: boolean;
 }
 
-export default function DiscoveryScreen() {
+export default function SeriesScreen() {
   const { showToast } = useToast();
   const { region, regionName } = useRegion();
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [series, setSeries] = useState<TVSeries[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,10 +73,10 @@ export default function DiscoveryScreen() {
   const loadGenres = async () => {
     setLoadingGenres(true);
     try {
-      const genreList = await tmdb.getGenres();
+      const genreList = await tmdb.getTVGenres();
       setGenres(genreList);
     } catch (error) {
-      console.error('Error loading genres:', error);
+      console.error('Error loading TV genres:', error);
     } finally {
       setLoadingGenres(false);
     }
@@ -94,15 +94,15 @@ export default function DiscoveryScreen() {
     );
   };
 
-  const loadInitialMovies = async () => {
+  const loadInitialSeries = async () => {
     const newRandomPage = Math.floor(Math.random() * 100) + 1;
     setRandomPage(newRandomPage);
-    await loadMovies(1, newRandomPage);
+    await loadSeries(1, newRandomPage);
   };
 
   // Effects
   useEffect(() => {
-    loadInitialMovies();
+    loadInitialSeries();
   }, []);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function DiscoveryScreen() {
     };
   }, [actorSearchQuery]);
 
-  const loadMovies = async (page: number = 1, randomPageOverride?: number, filtersOverride?: Filters) => {
+  const loadSeries = async (page: number = 1, randomPageOverride?: number, filtersOverride?: Filters) => {
     try {
       if (page === 1) {
         setLoading(true);
@@ -150,7 +150,7 @@ export default function DiscoveryScreen() {
       }
       setError(null);
 
-      let moviesData;
+      let seriesData;
 
       // Use override filters if provided, otherwise use state
       const activeFilters = filtersOverride !== undefined ? filtersOverride : filters;
@@ -165,7 +165,7 @@ export default function DiscoveryScreen() {
 
       if (hasFilters) {
         // Use filters (region from context)
-        const response = await tmdb.discoverMovies({
+        const response = await tmdb.discoverTVSeries({
           genres: activeFilters.genres.length > 0 ? activeFilters.genres : undefined,
           year_gte: activeFilters.yearFrom,
           year_lte: activeFilters.yearTo,
@@ -175,33 +175,33 @@ export default function DiscoveryScreen() {
           page,
           region, // Pass region from context for provider filtering
         });
-        // Filter out movies without posters in Discovery
-        moviesData = response.results.filter(movie => movie.poster_path);
+        // Filter out series without posters in Discovery
+        seriesData = response.results.filter(show => show.poster_path);
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
-          // Debug: log first 3 movies' watch providers structure
-          if (moviesData.length > 0) {
+          // Debug: log first 3 series' watch providers structure
+          if (seriesData.length > 0) {
             console.log(`🔍 Debug - Checking region: ${region} (${regionName})`);
-            console.log(`🔍 Debug - Total movies before filter: ${moviesData.length}`);
-            moviesData.slice(0, 3).forEach((movie: any, index: number) => {
-              console.log(`\n🔍 Movie ${index + 1}: ${movie.title}`);
-              console.log('   watchProviders:', JSON.stringify(movie.watchProviders, null, 2));
+            console.log(`🔍 Debug - Total series before filter: ${seriesData.length}`);
+            seriesData.slice(0, 3).forEach((show: any, index: number) => {
+              console.log(`\n🔍 Series ${index + 1}: ${show.name}`);
+              console.log('   watchProviders:', JSON.stringify(show.watchProviders, null, 2));
             });
           }
           
-          const beforeCount = moviesData.length;
-          moviesData = moviesData.filter((movie: any) => {
+          const beforeCount = seriesData.length;
+          seriesData = seriesData.filter((show: any) => {
             // Check all possible paths for watch providers
-            const providersResults = movie.watchProviders?.results?.[region];
-            const providersDirect = movie.watchProviders?.[region];
-            const providersAlt = movie['watch/providers']?.[region];
+            const providersResults = show.watchProviders?.results?.[region];
+            const providersDirect = show.watchProviders?.[region];
+            const providersAlt = show['watch/providers']?.[region];
             
             const providers = providersResults || providersDirect || providersAlt;
             
-            // A movie is available if it has any provider type (flatrate, rent, or buy)
+            // A series is available if it has any provider type (flatrate, rent, or buy)
             if (!providers) {
-              console.log(`   ❌ ${movie.title}: No providers found for ${region}`);
+              console.log(`   ❌ ${show.name}: No providers found for ${region}`);
               return false;
             }
             
@@ -211,15 +211,15 @@ export default function DiscoveryScreen() {
               (providers.buy && providers.buy.length > 0);
             
             if (hasProviders) {
-              console.log(`   ✅ ${movie.title}: Available (${providers.flatrate?.length || 0} stream, ${providers.rent?.length || 0} rent, ${providers.buy?.length || 0} buy)`);
+              console.log(`   ✅ ${show.name}: Available (${providers.flatrate?.length || 0} stream, ${providers.rent?.length || 0} rent, ${providers.buy?.length || 0} buy)`);
             } else {
-              console.log(`   ❌ ${movie.title}: No streaming options in ${region}`);
+              console.log(`   ❌ ${show.name}: No streaming options in ${region}`);
             }
             
             return hasProviders;
           });
           
-          console.log(`\n✅ After region filter: ${moviesData.length}/${beforeCount} movies available in ${region}`);
+          console.log(`\n✅ After region filter: ${seriesData.length}/${beforeCount} series available in ${region}`);
         }
         
         setHasMore(page < response.total_pages && response.total_pages > 0);
@@ -227,27 +227,27 @@ export default function DiscoveryScreen() {
         // Random mode - no filters (limit to last 40 years)
         const pageToUse = randomPageOverride !== undefined ? randomPageOverride : randomPage;
         const currentYear = new Date().getFullYear();
-        const response = await tmdb.discoverMovies({ 
+        const response = await tmdb.discoverTVSeries({ 
           page: pageToUse,
           year_gte: currentYear - 40
         });
-        // Filter out movies without posters in Discovery
-        moviesData = response.results.filter(movie => movie.poster_path);
+        // Filter out series without posters in Discovery
+        seriesData = response.results.filter(show => show.poster_path);
         setHasMore(true); // Always has more in random mode
       }
 
       if (page === 1) {
-        setMovies(moviesData);
+        setSeries(seriesData);
         setSwipedCount(0);
       } else {
-        setMovies((prev) => [...prev, ...moviesData]);
+        setSeries((prev) => [...prev, ...seriesData]);
       }
 
       setCurrentPage(page);
-      console.log(`✅ Loaded ${moviesData.length} movies (page ${page})`);
+      console.log(`✅ Loaded ${seriesData.length} TV series (page ${page})`);
     } catch (err) {
-      setError('Failed to load movies');
-      console.error('Error loading movies:', err);
+      setError('Failed to load TV series');
+      console.error('Error loading TV series:', err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -257,30 +257,30 @@ export default function DiscoveryScreen() {
   const handleRefresh = async () => {
     if (hasActiveFilters()) {
       // Reset to page 1 with current filters
-      await loadMovies(1);
+      await loadSeries(1);
     } else {
       // Random mode - pick new random page
       const newRandomPage = Math.floor(Math.random() * 100) + 1;
       setRandomPage(newRandomPage);
-      await loadMovies(1, newRandomPage);
+      await loadSeries(1, newRandomPage);
     }
   };
 
   const handleSwipeLeft = (item: Movie | TVSeries) => {
-    const movie = item as Movie;
-    console.log('👎 Disliked:', movie.title);
+    const show = item as TVSeries;
+    console.log('👎 Disliked:', show.name);
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
-    checkIfNeedMoreMovies(newCount);
+    checkIfNeedMoreSeries(newCount);
   };
 
   const handleSwipeRight = async (item: Movie | TVSeries) => {
-    const movie = item as Movie;
-    console.log('❤️ Liked:', movie.title);
+    const show = item as TVSeries;
+    console.log('❤️ Liked:', show.name);
     try {
-      await addToWatchlist(movie, 'normal', 'movie');
+      await addToWatchlist(show, 'normal', 'tv');
       showToast({ 
-        message: `Added "${movie.title}" to watchlist`, 
+        message: `Added "${show.name}" to watchlist`, 
         type: 'success' 
       });
     } catch (error) {
@@ -292,16 +292,16 @@ export default function DiscoveryScreen() {
     }
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
-    checkIfNeedMoreMovies(newCount);
+    checkIfNeedMoreSeries(newCount);
   };
 
   const handleSwipeUp = async (item: Movie | TVSeries) => {
-    const movie = item as Movie;
-    console.log('⭐ Super Liked:', movie.title);
+    const show = item as TVSeries;
+    console.log('⭐ Super Liked:', show.name);
     try {
-      await addToWatchlist(movie, 'super', 'movie');
+      await addToWatchlist(show, 'super', 'tv');
       showToast({ 
-        message: `⭐ Super-liked "${movie.title}"!`, 
+        message: `⭐ Super-liked "${show.name}"!`, 
         type: 'success' 
       });
     } catch (error) {
@@ -313,21 +313,21 @@ export default function DiscoveryScreen() {
     }
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
-    checkIfNeedMoreMovies(newCount);
+    checkIfNeedMoreSeries(newCount);
   };
 
-  const checkIfNeedMoreMovies = (currentSwipedCount: number) => {
-    const remainingMovies = movies.length - currentSwipedCount;
+  const checkIfNeedMoreSeries = (currentSwipedCount: number) => {
+    const remainingSeries = series.length - currentSwipedCount;
 
-    if (remainingMovies <= 3 && hasMore && !loadingMore) {
-      console.log(`🔄 Only ${remainingMovies} movies left, loading more...`);
+    if (remainingSeries <= 3 && hasMore && !loadingMore) {
+      console.log(`🔄 Only ${remainingSeries} series left, loading more...`);
       if (hasActiveFilters()) {
-        loadMovies(currentPage + 1);
+        loadSeries(currentPage + 1);
       } else {
         // In random mode, load a new random page
         const newRandomPage = Math.floor(Math.random() * 100) + 1;
         setRandomPage(newRandomPage);
-        loadMovies(currentPage + 1, newRandomPage);
+        loadSeries(currentPage + 1, newRandomPage);
       }
     }
   };
@@ -344,7 +344,7 @@ export default function DiscoveryScreen() {
     setFilterModalVisible(false);
     setCurrentPage(1);
     // Pass newFilters directly to avoid state sync issue
-    await loadMovies(1, undefined, newFilters);
+    await loadSeries(1, undefined, newFilters);
   };
 
   const clearAllFilters = async () => {
@@ -358,7 +358,7 @@ export default function DiscoveryScreen() {
     const newRandomPage = Math.floor(Math.random() * 100) + 1;
     setRandomPage(newRandomPage);
     // Pass emptyFilters directly to ensure immediate application
-    await loadMovies(1, newRandomPage, emptyFilters);
+    await loadSeries(1, newRandomPage, emptyFilters);
   };
 
   const removeFilter = async (filterKey: keyof Filters) => {
@@ -393,10 +393,10 @@ export default function DiscoveryScreen() {
       const newRandomPage = Math.floor(Math.random() * 100) + 1;
       setRandomPage(newRandomPage);
       // Pass updatedFilters directly to ensure immediate application
-      await loadMovies(1, newRandomPage, updatedFilters);
+      await loadSeries(1, newRandomPage, updatedFilters);
     } else {
       // Pass updatedFilters directly to ensure immediate application
-      await loadMovies(1, undefined, updatedFilters);
+      await loadSeries(1, undefined, updatedFilters);
     }
   };
 
@@ -451,12 +451,12 @@ export default function DiscoveryScreen() {
       <View style={styles.container}>
         <View style={styles.stickyHeader}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>🍿 Popcorns</Text>
+            <Text style={styles.title}>📺 Series</Text>
             <View style={styles.filterButton}>
               <Text style={styles.filterIcon}>⚙️</Text>
             </View>
           </View>
-          <Text style={styles.subtitle}>Loading movies...</Text>
+          <Text style={styles.subtitle}>Loading TV series...</Text>
         </View>
         <View style={styles.contentArea}>
           <View style={styles.skeletonContainer}>
@@ -480,7 +480,7 @@ export default function DiscoveryScreen() {
       {/* Sticky header - always visible at top */}
       <View style={styles.stickyHeader}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>🍿 Popcorns</Text>
+          <Text style={styles.title}>📺 Series</Text>
           <TouchableOpacity onPress={openFilterModal} style={styles.filterButton}>
             <Text style={styles.filterIcon}>
               {hasActiveFilters() ? '🔍' : '⚙️'}
@@ -564,7 +564,7 @@ export default function DiscoveryScreen() {
         hasActiveFilters() && styles.contentAreaWithFilters
       ]}>
         <SwipeStack
-          movies={movies}
+          movies={series}
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
           onSwipeUp={handleSwipeUp}
@@ -605,7 +605,7 @@ export default function DiscoveryScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filter Movies</Text>
+              <Text style={styles.modalTitle}>Filter TV Series</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>

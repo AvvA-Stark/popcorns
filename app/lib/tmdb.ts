@@ -37,6 +37,51 @@ export interface MovieDetails extends Movie {
   }>;
 }
 
+export interface TVSeries {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  first_air_date: string;
+  vote_average: number;
+  vote_count: number;
+  genre_ids: number[];
+  popularity: number;
+  original_language: string;
+  adult: boolean;
+  origin_country: string[];
+}
+
+export interface TVSeriesDetails extends TVSeries {
+  genres: { id: number; name: string }[];
+  episode_run_time: number[];
+  number_of_seasons: number;
+  number_of_episodes: number;
+  status: string;
+  tagline: string;
+  homepage: string;
+  in_production: boolean;
+  last_air_date: string;
+  networks: Array<{
+    id: number;
+    name: string;
+    logo_path: string | null;
+  }>;
+  created_by: Array<{
+    id: number;
+    name: string;
+    profile_path: string | null;
+  }>;
+  seasons: Array<{
+    id: number;
+    name: string;
+    season_number: number;
+    episode_count: number;
+    poster_path: string | null;
+  }>;
+}
+
 export interface WatchProvider {
   logo_path: string;
   provider_id: number;
@@ -90,6 +135,12 @@ export interface MovieDetailsComplete extends MovieDetails {
   watchProviders?: WatchProviders;
 }
 
+export interface TVSeriesDetailsComplete extends TVSeriesDetails {
+  aggregate_credits?: Credits;
+  videos?: Video[];
+  watchProviders?: WatchProviders;
+}
+
 export interface Genre {
   id: number;
   name: string;
@@ -122,6 +173,25 @@ export interface DiscoverMoviesResponse {
   total_results: number;
 }
 
+export interface DiscoverTVSeriesParams {
+  genres?: number[];
+  year?: number;
+  year_gte?: number;
+  year_lte?: number;
+  actor?: number;
+  provider?: number;
+  rating_gte?: number;
+  page?: number;
+  region?: string;
+}
+
+export interface DiscoverTVSeriesResponse {
+  results: TVSeries[];
+  page: number;
+  total_pages: number;
+  total_results: number;
+}
+
 // Streaming provider ID mapping
 export const PROVIDER_IDS: Record<string, number> = {
   'Netflix': 8,
@@ -139,6 +209,7 @@ export const PROVIDER_IDS: Record<string, number> = {
 
 // Module-level cache for genres
 let genresCache: Genre[] | null = null;
+let tvGenresCache: Genre[] | null = null;
 
 class TMDBClient {
   private client: AxiosInstance;
@@ -560,6 +631,297 @@ class TMDBClient {
       return data;
     } catch (error) {
       console.error(`Error fetching similar movies for ${movieId}:`, error);
+      throw error;
+    }
+  }
+
+  // ==================== TV SERIES METHODS ====================
+
+  /**
+   * Get list of all TV genres (cached)
+   * Only fetches once per app session
+   */
+  async getTVGenres(): Promise<Genre[]> {
+    if (tvGenresCache) {
+      return tvGenresCache;
+    }
+
+    try {
+      const response = await this.client.get('/genre/tv/list');
+      tvGenresCache = response.data.genres;
+      return tvGenresCache!;
+    } catch (error) {
+      console.error('Error fetching TV genres:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Discover TV series with comprehensive filters
+   * Supports genres, year, actor, provider, rating, and more
+   */
+  async discoverTVSeries(params: DiscoverTVSeriesParams = {}): Promise<DiscoverTVSeriesResponse> {
+    try {
+      const queryParams: any = {
+        page: params.page || 1,
+        sort_by: 'popularity.desc',
+        include_adult: false,
+      };
+
+      // Genre filter (comma-separated IDs)
+      if (params.genres && params.genres.length > 0) {
+        queryParams.with_genres = params.genres.join(',');
+      }
+
+      // Year filter (using first_air_date for TV)
+      if (params.year) {
+        queryParams.first_air_date_year = params.year;
+      }
+
+      // Year range filters
+      if (params.year_gte) {
+        queryParams['first_air_date.gte'] = `${params.year_gte}-01-01`;
+      }
+      
+      if (params.year_lte) {
+        queryParams['first_air_date.lte'] = `${params.year_lte}-12-31`;
+      }
+
+      // Actor filter
+      if (params.actor) {
+        queryParams.with_cast = params.actor;
+      }
+
+      // Streaming provider filter
+      if (params.provider) {
+        queryParams.with_watch_providers = params.provider;
+        queryParams.watch_region = params.region || 'US'; // Use detected region or fallback to US
+      }
+
+      // Minimum rating filter
+      if (params.rating_gte !== undefined) {
+        queryParams['vote_average.gte'] = params.rating_gte;
+      }
+
+      const response = await this.client.get('/discover/tv', {
+        params: queryParams,
+      });
+
+      return {
+        results: response.data.results,
+        page: response.data.page,
+        total_pages: response.data.total_pages,
+        total_results: response.data.total_results,
+      };
+    } catch (error) {
+      console.error('Error discovering TV series:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search TV series by query (with caching)
+   */
+  async searchTVSeries(query: string, page: number = 1): Promise<TVSeries[]> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_search_${query}_${page}`;
+      const cached = await getCached<TVSeries[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: TV Search "${query}"`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Searching TV "${query}"`);
+      const response = await this.client.get('/search/tv', {
+        params: {
+          query,
+          page,
+          include_adult: false,
+        },
+      });
+      const data = response.data.results;
+      
+      // Cache the result (1 hour - search results change less frequently)
+      await setCached(cacheKey, data, CacheTTL.SEARCH_RESULTS);
+      
+      return data;
+    } catch (error) {
+      console.error('Error searching TV series:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch TV series details by ID (with caching)
+   */
+  async getTVSeriesDetails(seriesId: number): Promise<TVSeriesDetails> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_details_${seriesId}`;
+      const cached = await getCached<TVSeriesDetails>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: TV series details ${seriesId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching TV series details ${seriesId}`);
+      const response = await this.client.get(`/tv/${seriesId}`);
+      const data = response.data;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.MOVIE_DETAILS);
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching TV series details for ${seriesId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get TV series aggregate credits (cast & crew) (with caching)
+   */
+  async getTVSeriesCredits(seriesId: number): Promise<Credits> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_credits_${seriesId}`;
+      const cached = await getCached<Credits>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: TV Credits ${seriesId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching TV credits ${seriesId}`);
+      const response = await this.client.get(`/tv/${seriesId}/aggregate_credits`);
+      const data = response.data;
+      
+      // Cache the result (7 days - cast rarely changes)
+      await setCached(cacheKey, data, CacheTTL.CREDITS);
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching TV credits for ${seriesId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get TV series videos (trailers, teasers, etc.) (with caching)
+   */
+  async getTVVideos(seriesId: number): Promise<Video[]> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_videos_${seriesId}`;
+      const cached = await getCached<Video[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: TV Videos ${seriesId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching TV videos ${seriesId}`);
+      const response = await this.client.get(`/tv/${seriesId}/videos`);
+      const data = response.data.results;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.VIDEOS);
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching TV videos for ${seriesId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get watch providers (streaming availability) for a TV series (with caching)
+   * @param seriesId - The TV series ID
+   * @param region - Optional region code (e.g., 'US', 'BG'). If not provided, returns all regions
+   */
+  async getTVWatchProviders(seriesId: number, region?: string): Promise<WatchProviders> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_watch_providers_${seriesId}_${region || 'all'}`;
+      const cached = await getCached<WatchProviders>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: TV Watch providers ${seriesId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching TV watch providers ${seriesId}`);
+      const params = region ? { watch_region: region } : {};
+      const response = await this.client.get(`/tv/${seriesId}/watch/providers`, { params });
+      const data = response.data.results;
+      
+      // Cache the result (7 days - providers rarely change)
+      await setCached(cacheKey, data, CacheTTL.WATCH_PROVIDERS);
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching TV watch providers for ${seriesId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get complete TV series details with credits, videos, and watch providers
+   * This is the main method to use for the detail modal
+   * @param seriesId - The TV series ID
+   * @param region - Optional region code for watch providers (e.g., 'US', 'BG')
+   */
+  async getTVSeriesDetailsComplete(seriesId: number, region?: string): Promise<TVSeriesDetailsComplete> {
+    try {
+      // Fetch all data in parallel
+      const [details, credits, videos, watchProviders] = await Promise.all([
+        this.getTVSeriesDetails(seriesId),
+        this.getTVSeriesCredits(seriesId).catch(() => ({ cast: [], crew: [] })),
+        this.getTVVideos(seriesId).catch(() => []),
+        this.getTVWatchProviders(seriesId, region).catch(() => ({})),
+      ]);
+
+      return {
+        ...details,
+        aggregate_credits: credits,
+        videos,
+        watchProviders,
+      };
+    } catch (error) {
+      console.error(`Error fetching complete TV details for ${seriesId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get similar TV series for a given series ID (with caching)
+   */
+  async getSimilarTVSeries(seriesId: number, page: number = 1): Promise<TVSeries[]> {
+    try {
+      // Check cache first
+      const cacheKey = `tv_similar_${seriesId}_${page}`;
+      const cached = await getCached<TVSeries[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Similar TV series ${seriesId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from API
+      console.log(`🌐 Cache MISS: Fetching similar TV series ${seriesId}`);
+      const response = await this.client.get(`/tv/${seriesId}/similar`, {
+        params: { page },
+      });
+      const data = response.data.results;
+      
+      // Cache the result
+      await setCached(cacheKey, data, CacheTTL.SIMILAR_MOVIES);
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching similar TV series for ${seriesId}:`, error);
       throw error;
     }
   }

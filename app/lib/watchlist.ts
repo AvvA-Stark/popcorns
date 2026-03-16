@@ -1,12 +1,14 @@
 /**
  * Watchlist Service
- * Manages persistent storage of user's saved movies
+ * Manages persistent storage of user's saved movies and TV series
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Movie } from './tmdb';
+import { Movie, TVSeries } from './tmdb';
 
 const WATCHLIST_KEY = '@popcorns:watchlist';
+
+export type MediaType = 'movie' | 'tv';
 
 export interface WatchlistItem {
   id: number;
@@ -14,42 +16,49 @@ export interface WatchlistItem {
   posterPath: string | null;
   addedAt: number;
   priority: 'normal' | 'super'; // normal = right swipe, super = up swipe
+  mediaType: MediaType; // 'movie' or 'tv'
   overview?: string;
   releaseDate?: string;
   voteAverage?: number;
 }
 
 /**
- * Add a movie to the watchlist
+ * Add a movie or TV series to the watchlist
  */
 export async function addToWatchlist(
-  movie: Movie,
-  priority: 'normal' | 'super' = 'normal'
+  item: Movie | TVSeries,
+  priority: 'normal' | 'super' = 'normal',
+  mediaType: MediaType = 'movie'
 ): Promise<void> {
   try {
     const currentWatchlist = await getWatchlist();
     
-    // Check if movie already exists
-    const exists = currentWatchlist.some(item => item.id === movie.id);
+    // Check if item already exists (check both id and mediaType)
+    const exists = currentWatchlist.some(w => w.id === item.id && w.mediaType === mediaType);
     if (exists) {
-      console.log(`Movie ${movie.title} already in watchlist`);
+      const title = 'title' in item ? item.title : item.name;
+      console.log(`${mediaType === 'movie' ? 'Movie' : 'Series'} ${title} already in watchlist`);
       return;
     }
 
+    const title = 'title' in item ? item.title : item.name;
+    const releaseDate = 'release_date' in item ? item.release_date : item.first_air_date;
+
     const newItem: WatchlistItem = {
-      id: movie.id,
-      title: movie.title,
-      posterPath: movie.poster_path,
+      id: item.id,
+      title,
+      posterPath: item.poster_path,
       addedAt: Date.now(),
       priority,
-      overview: movie.overview,
-      releaseDate: movie.release_date,
-      voteAverage: movie.vote_average,
+      mediaType,
+      overview: item.overview,
+      releaseDate,
+      voteAverage: item.vote_average,
     };
 
     const updatedWatchlist = [newItem, ...currentWatchlist];
     await AsyncStorage.setItem(WATCHLIST_KEY, JSON.stringify(updatedWatchlist));
-    console.log(`✅ Added ${movie.title} to watchlist (${priority})`);
+    console.log(`✅ Added ${title} to watchlist (${priority}, ${mediaType})`);
   } catch (error) {
     console.error('Error adding to watchlist:', error);
     throw error;
@@ -57,14 +66,14 @@ export async function addToWatchlist(
 }
 
 /**
- * Remove a movie from the watchlist
+ * Remove a movie or TV series from the watchlist
  */
-export async function removeFromWatchlist(movieId: number): Promise<void> {
+export async function removeFromWatchlist(id: number, mediaType: MediaType = 'movie'): Promise<void> {
   try {
     const currentWatchlist = await getWatchlist();
-    const updatedWatchlist = currentWatchlist.filter(item => item.id !== movieId);
+    const updatedWatchlist = currentWatchlist.filter(item => !(item.id === id && item.mediaType === mediaType));
     await AsyncStorage.setItem(WATCHLIST_KEY, JSON.stringify(updatedWatchlist));
-    console.log(`🗑️ Removed movie ${movieId} from watchlist`);
+    console.log(`🗑️ Removed ${mediaType} ${id} from watchlist`);
   } catch (error) {
     console.error('Error removing from watchlist:', error);
     throw error;
@@ -86,12 +95,12 @@ export async function getWatchlist(): Promise<WatchlistItem[]> {
 }
 
 /**
- * Check if a movie is in the watchlist
+ * Check if a movie or TV series is in the watchlist
  */
-export async function isInWatchlist(movieId: number): Promise<boolean> {
+export async function isInWatchlist(id: number, mediaType: MediaType = 'movie'): Promise<boolean> {
   try {
     const watchlist = await getWatchlist();
-    return watchlist.some(item => item.id === movieId);
+    return watchlist.some(item => item.id === id && item.mediaType === mediaType);
   } catch (error) {
     console.error('Error checking watchlist:', error);
     return false;

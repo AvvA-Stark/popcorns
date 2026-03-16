@@ -18,7 +18,7 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Movie } from '../lib/tmdb';
+import { Movie, TVSeries } from '../lib/tmdb';
 import MovieCard from './MovieCard';
 import { Colors } from '../constants/Colors';
 
@@ -29,10 +29,10 @@ const ROTATION_MULTIPLIER = 15;
 const SUPER_LIKE_THRESHOLD = -100;
 
 interface SwipeStackProps {
-  movies: Movie[];
-  onSwipeLeft?: (movie: Movie) => void;
-  onSwipeRight?: (movie: Movie) => void;
-  onSwipeUp?: (movie: Movie) => void;
+  movies: (Movie | TVSeries)[];
+  onSwipeLeft?: (item: Movie | TVSeries) => void;
+  onSwipeRight?: (item: Movie | TVSeries) => void;
+  onSwipeUp?: (item: Movie | TVSeries) => void;
 }
 
 export default function SwipeStack({
@@ -152,7 +152,7 @@ export default function SwipeStack({
 }
 
 interface SwipeCardProps {
-  movie: Movie;
+  movie: Movie | TVSeries;
   index: number;
   isTopCard: boolean;
   translateX: SharedValue<number>;

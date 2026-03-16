@@ -1,6 +1,6 @@
 /**
- * Movie Detail Screen
- * Full details, cast, trailers, and streaming availability
+ * Series Detail Screen
+ * Full details, cast, trailers, and streaming availability for TV series
  */
 
 import { useEffect, useState } from 'react';
@@ -22,7 +22,7 @@ import CachedImage from '../../components/CachedImage';
 import { WebView } from 'react-native-webview';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
-import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
+import { tmdb, TVSeriesDetailsComplete, CastMember, WatchProvider, TVSeries } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRegion } from '../../context/RegionContext';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
@@ -31,7 +31,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
 
 interface UserReview {
-  movieId: number;
+  seriesId: number;
   rating: number; // 1-10
   text: string;
   date: string;
@@ -70,11 +70,11 @@ const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
   'Plex': 'https://www.plex.tv/',
 };
 
-export default function MovieDetailScreen() {
+export default function SeriesDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { region, regionName } = useRegion();
-  const [movie, setMovie] = useState<MovieDetailsComplete | null>(null);
+  const [series, setSeries] = useState<TVSeriesDetailsComplete | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInWatchlistState, setIsInWatchlistState] = useState(false);
@@ -88,27 +88,27 @@ export default function MovieDetailScreen() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   
-  // Similar Movies state
-  const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
-  const [similarMoviesLoading, setSimilarMoviesLoading] = useState(false);
+  // Similar Series state
+  const [similarSeries, setSimilarSeries] = useState<TVSeries[]>([]);
+  const [similarSeriesLoading, setSimilarSeriesLoading] = useState(false);
 
   useEffect(() => {
-    loadMovieDetails();
+    loadSeriesDetails();
     checkWatchlistStatus();
     loadReviews();
-    loadSimilarMovies();
+    loadSimilarSeries();
   }, [id]);
 
-  const loadMovieDetails = async () => {
+  const loadSeriesDetails = async () => {
     try {
       setLoading(true);
       setError(null);
       // Use region from context (already detected on app start)
-      const details = await tmdb.getMovieDetailsComplete(Number(id), region);
-      setMovie(details);
+      const details = await tmdb.getTVSeriesDetailsComplete(Number(id), region);
+      setSeries(details);
     } catch (err) {
-      console.error('Error loading movie details:', err);
-      setError('Failed to load movie details. Please try again.');
+      console.error('Error loading series details:', err);
+      setError('Failed to load series details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export default function MovieDetailScreen() {
 
   const checkWatchlistStatus = async () => {
     try {
-      const inWatchlist = await isInWatchlist(Number(id), 'movie');
+      const inWatchlist = await isInWatchlist(Number(id), 'tv');
       setIsInWatchlistState(inWatchlist);
     } catch (err) {
       console.error('Error checking watchlist:', err);
@@ -124,17 +124,17 @@ export default function MovieDetailScreen() {
   };
 
   const toggleWatchlist = async () => {
-    if (!movie) return;
+    if (!series) return;
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       
       if (isInWatchlistState) {
         // Remove from watchlist
-        await removeFromWatchlist(movie.id, 'movie');
+        await removeFromWatchlist(series.id, 'tv');
       } else {
         // Add to watchlist with normal priority (from detail screen)
-        await addToWatchlist(movie, 'normal', 'movie');
+        await addToWatchlist(series, 'normal', 'tv');
       }
 
       setIsInWatchlistState(!isInWatchlistState);
@@ -145,12 +145,12 @@ export default function MovieDetailScreen() {
 
   const loadReviews = async () => {
     try {
-      const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+      const reviewsJson = await AsyncStorage.getItem('@popcorns_tv_reviews');
       if (reviewsJson) {
         const allReviews: UserReview[] = JSON.parse(reviewsJson);
-        // Filter reviews for this movie
-        const movieReviews = allReviews.filter(r => r.movieId === Number(id));
-        setReviews(movieReviews);
+        // Filter reviews for this series
+        const seriesReviews = allReviews.filter(r => r.seriesId === Number(id));
+        setReviews(seriesReviews);
       }
     } catch (err) {
       console.error('Error loading reviews:', err);
@@ -158,24 +158,24 @@ export default function MovieDetailScreen() {
   };
 
   const saveReview = async () => {
-    if (!movie) return;
+    if (!series) return;
 
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+      const reviewsJson = await AsyncStorage.getItem('@popcorns_tv_reviews');
       let allReviews: UserReview[] = reviewsJson ? JSON.parse(reviewsJson) : [];
 
       const newReview: UserReview = {
-        movieId: movie.id,
+        seriesId: series.id,
         rating: reviewRating,
         text: reviewText.trim(),
         date: new Date().toISOString(),
       };
 
       allReviews.push(newReview);
-      await AsyncStorage.setItem('@popcorns_reviews', JSON.stringify(allReviews));
+      await AsyncStorage.setItem('@popcorns_tv_reviews', JSON.stringify(allReviews));
       
-      // Reload reviews for this movie
+      // Reload reviews for this series
       await loadReviews();
       
       // Reset form
@@ -205,15 +205,15 @@ export default function MovieDetailScreen() {
     return <View style={{ flexDirection: 'row' }}>{stars}</View>;
   };
 
-  const loadSimilarMovies = async () => {
+  const loadSimilarSeries = async () => {
     try {
-      setSimilarMoviesLoading(true);
-      const similar = await tmdb.getSimilarMovies(Number(id));
-      setSimilarMovies(similar.slice(0, 10)); // Limit to 10 movies
+      setSimilarSeriesLoading(true);
+      const similar = await tmdb.getSimilarTVSeries(Number(id));
+      setSimilarSeries(similar.slice(0, 10)); // Limit to 10 series
     } catch (err) {
-      console.error('Error loading similar movies:', err);
+      console.error('Error loading similar series:', err);
     } finally {
-      setSimilarMoviesLoading(false);
+      setSimilarSeriesLoading(false);
     }
   };
 
@@ -221,32 +221,34 @@ export default function MovieDetailScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={Colors.accent} />
-        <Text style={styles.loadingText}>Loading movie details...</Text>
+        <Text style={styles.loadingText}>Loading series details...</Text>
       </View>
     );
   }
 
-  if (error || !movie) {
+  if (error || !series) {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorIcon}>😞</Text>
-        <Text style={styles.errorText}>{error || 'Movie not found'}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadMovieDetails}>
+        <Text style={styles.errorText}>{error || 'Series not found'}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadSeriesDetails}>
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const backdropUrl = tmdb.getBackdropUrl(movie.backdrop_path, 'large');
-  const posterUrl = tmdb.getPosterUrl(movie.poster_path, 'large');
-  const rating = movie.vote_average.toFixed(1);
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
-  const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : null;
+  const backdropUrl = tmdb.getBackdropUrl(series.backdrop_path, 'large');
+  const posterUrl = tmdb.getPosterUrl(series.poster_path, 'large');
+  const rating = series.vote_average.toFixed(1);
+  const year = series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A';
+  const episodeRuntime = series.episode_run_time && series.episode_run_time.length > 0 
+    ? `~${series.episode_run_time[0]} min/ep` 
+    : null;
   
-  const trailer = movie.videos ? tmdb.getYouTubeTrailer(movie.videos) : null;
-  const topCast = movie.credits?.cast.slice(0, 10) || [];
-  const providers = movie.watchProviders?.[region] || Object.values(movie.watchProviders || {})[0];
+  const trailer = series.videos ? tmdb.getYouTubeTrailer(series.videos) : null;
+  const topCast = series.aggregate_credits?.cast.slice(0, 10) || [];
+  const providers = series.watchProviders?.[region] || Object.values(series.watchProviders || {})[0];
   const streamingServices = providers?.flatrate || [];
 
   return (
@@ -279,13 +281,14 @@ export default function MovieDetailScreen() {
               contentFit="cover"
             />
             <View style={styles.headerTextContainer}>
-              <Text style={styles.title}>{movie.title}</Text>
+              <Text style={styles.title}>{series.name}</Text>
               <View style={styles.metaRow}>
                 <View style={styles.ratingBadge}>
                   <Text style={styles.ratingText}>⭐ {rating}</Text>
                 </View>
                 <Text style={styles.metaText}>{year}</Text>
-                {runtime && <Text style={styles.metaText}>• {runtime}</Text>}
+                {episodeRuntime && <Text style={styles.metaText}>• {episodeRuntime}</Text>}
+                <Text style={styles.metaText}>• {series.number_of_seasons} Season{series.number_of_seasons > 1 ? 's' : ''}</Text>
               </View>
             </View>
           </View>
@@ -294,9 +297,9 @@ export default function MovieDetailScreen() {
         {/* Content */}
         <View style={styles.content}>
           {/* Genres */}
-          {movie.genres && movie.genres.length > 0 && (
+          {series.genres && series.genres.length > 0 && (
             <View style={styles.genresContainer}>
-              {movie.genres.map((genre) => (
+              {series.genres.map((genre) => (
                 <View key={genre.id} style={styles.genrePill}>
                   <Text style={styles.genreText}>{genre.name}</Text>
                 </View>
@@ -304,15 +307,70 @@ export default function MovieDetailScreen() {
             </View>
           )}
 
+          {/* Status Badge */}
+          <View style={styles.statusContainer}>
+            <View style={[
+              styles.statusBadge,
+              series.status === 'Ended' && styles.statusBadgeEnded,
+              series.status === 'Returning Series' && styles.statusBadgeReturning,
+            ]}>
+              <Text style={styles.statusText}>{series.status}</Text>
+            </View>
+            {series.in_production && (
+              <View style={styles.productionBadge}>
+                <Text style={styles.productionText}>In Production</Text>
+              </View>
+            )}
+          </View>
+
           {/* Tagline */}
-          {movie.tagline && (
-            <Text style={styles.tagline}>"{movie.tagline}"</Text>
+          {series.tagline && (
+            <Text style={styles.tagline}>"{series.tagline}"</Text>
           )}
 
           {/* Overview */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Overview</Text>
-            <Text style={styles.overview}>{movie.overview || 'No overview available.'}</Text>
+            <Text style={styles.overview}>{series.overview || 'No overview available.'}</Text>
+          </View>
+
+          {/* Created By */}
+          {series.created_by && series.created_by.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Created By</Text>
+              <View style={styles.creatorsList}>
+                {series.created_by.map((creator) => (
+                  <Text key={creator.id} style={styles.creatorName}>{creator.name}</Text>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Networks */}
+          {series.networks && series.networks.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Networks</Text>
+              <View style={styles.networksList}>
+                {series.networks.map((network) => (
+                  <Text key={network.id} style={styles.networkName}>{network.name}</Text>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Seasons Info */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Seasons</Text>
+            <View style={styles.seasonsInfo}>
+              <Text style={styles.seasonsText}>
+                {series.number_of_seasons} Season{series.number_of_seasons > 1 ? 's' : ''} • {series.number_of_episodes} Episode{series.number_of_episodes > 1 ? 's' : ''}
+              </Text>
+              {series.last_air_date && (
+                <Text style={styles.lastAirText}>
+                  Last aired: {new Date(series.last_air_date).toLocaleDateString()}
+                </Text>
+              )}
+            </View>
           </View>
 
           {/* Cast */}
@@ -351,48 +409,48 @@ export default function MovieDetailScreen() {
             </View>
           )}
 
-          {/* Similar Movies */}
+          {/* Similar Series */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Similar Movies</Text>
-            {similarMoviesLoading ? (
-              <View style={styles.similarMoviesLoading}>
+            <Text style={styles.sectionTitle}>Similar Series</Text>
+            {similarSeriesLoading ? (
+              <View style={styles.similarSeriesLoading}>
                 <ActivityIndicator size="small" color={Colors.accent} />
               </View>
-            ) : similarMovies.length > 0 ? (
+            ) : similarSeries.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                style={styles.similarMoviesScroll}
+                style={styles.similarSeriesScroll}
               >
-                {similarMovies.map((similarMovie) => {
-                  const posterUrl = tmdb.getPosterUrl(similarMovie.poster_path, 'medium');
+                {similarSeries.map((similarShow) => {
+                  const posterUrl = tmdb.getPosterUrl(similarShow.poster_path, 'medium');
                   return (
                     <TouchableOpacity
-                      key={similarMovie.id}
-                      style={styles.similarMovieCard}
+                      key={similarShow.id}
+                      style={styles.similarSeriesCard}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        // Navigate to this movie's detail screen
-                        router.push(`/movie/${similarMovie.id}`);
+                        // Navigate to this series' detail screen
+                        router.push(`/series/${similarShow.id}` as any);
                       }}
                       activeOpacity={0.8}
                     >
                       <CachedImage
                         source={posterUrl}
-                        style={styles.similarMoviePoster}
+                        style={styles.similarSeriesPoster}
                         contentFit="cover"
                         fallback={
-                          <View style={[styles.similarMoviePoster, styles.similarMoviePosterPlaceholder]}>
-                            <Text style={styles.similarMoviePlaceholderIcon}>🎬</Text>
+                          <View style={[styles.similarSeriesPoster, styles.similarSeriesPosterPlaceholder]}>
+                            <Text style={styles.similarSeriesPlaceholderIcon}>📺</Text>
                           </View>
                         }
                       />
-                      <Text style={styles.similarMovieTitle} numberOfLines={2}>
-                        {similarMovie.title}
+                      <Text style={styles.similarSeriesTitle} numberOfLines={2}>
+                        {similarShow.name}
                       </Text>
-                      <View style={styles.similarMovieRating}>
-                        <Text style={styles.similarMovieRatingText}>
-                          ⭐ {similarMovie.vote_average.toFixed(1)}
+                      <View style={styles.similarSeriesRating}>
+                        <Text style={styles.similarSeriesRatingText}>
+                          ⭐ {similarShow.vote_average.toFixed(1)}
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -400,7 +458,7 @@ export default function MovieDetailScreen() {
                 })}
               </ScrollView>
             ) : (
-              <Text style={styles.noSimilarMovies}>No similar movies found</Text>
+              <Text style={styles.noSimilarSeries}>No similar series found</Text>
             )}
           </View>
 
@@ -420,23 +478,14 @@ export default function MovieDetailScreen() {
                       onPress={async () => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         
-                        // Log the exact provider name for debugging
-                        console.log('Provider pressed:', provider.provider_name);
-                        
                         const homepageUrl = PROVIDER_HOMEPAGE_URLS[provider.provider_name];
                         if (homepageUrl) {
-                          // Check if URL can be opened
                           const canOpen = await Linking.canOpenURL(homepageUrl);
                           if (canOpen) {
                             Linking.openURL(homepageUrl).catch(err => 
                               console.error('Failed to open provider URL:', err)
                             );
-                          } else {
-                            console.warn(`Cannot open URL for ${provider.provider_name}: ${homepageUrl}`);
                           }
-                        } else {
-                          console.warn(`No homepage URL configured for provider: ${provider.provider_name}`);
-                          // Do nothing - no competitive linking
                         }
                       }}
                       activeOpacity={0.7}
@@ -632,10 +681,8 @@ export default function MovieDetailScreen() {
                   setShowTrailer(false);
                   setTrailerLoading(false);
                   
-                  // Show error alert
                   Alert.alert('Error', 'Could not load trailer');
                   
-                  // Fallback: Open in YouTube app
                   if (trailer) {
                     Linking.openURL(`https://www.youtube.com/watch?v=${trailer.key}`).catch(err =>
                       console.error('Failed to open YouTube app:', err)
@@ -802,6 +849,39 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontWeight: '600',
   },
+  statusContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  statusBadge: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  statusBadgeEnded: {
+    backgroundColor: '#666666',
+  },
+  statusBadgeReturning: {
+    backgroundColor: Colors.success,
+  },
+  statusText: {
+    fontSize: 12,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  productionBadge: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  productionText: {
+    fontSize: 12,
+    color: Colors.background,
+    fontWeight: '600',
+  },
   tagline: {
     fontSize: 14,
     fontStyle: 'italic',
@@ -827,6 +907,39 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textSecondary,
     lineHeight: 22,
+  },
+  creatorsList: {
+    gap: 4,
+  },
+  creatorName: {
+    fontSize: 15,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  networksList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  networkName: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  seasonsInfo: {
+    gap: 8,
+  },
+  seasonsText: {
+    fontSize: 16,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  lastAirText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
   castScroll: {
     marginHorizontal: -20,
@@ -973,7 +1086,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
   },
-  // User Reviews styles
   reviewsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1116,49 +1228,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  // Similar Movies styles
-  similarMoviesLoading: {
+  similarSeriesLoading: {
     paddingVertical: 20,
     alignItems: 'center',
   },
-  similarMoviesScroll: {
+  similarSeriesScroll: {
     marginHorizontal: -20,
     paddingHorizontal: 20,
   },
-  similarMovieCard: {
+  similarSeriesCard: {
     width: 120,
     marginRight: 12,
   },
-  similarMoviePoster: {
+  similarSeriesPoster: {
     width: 120,
     height: 180,
     borderRadius: 8,
     backgroundColor: Colors.surface,
     marginBottom: 8,
   },
-  similarMoviePosterPlaceholder: {
+  similarSeriesPosterPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  similarMoviePlaceholderIcon: {
+  similarSeriesPlaceholderIcon: {
     fontSize: 40,
   },
-  similarMovieTitle: {
+  similarSeriesTitle: {
     fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 4,
     lineHeight: 16,
   },
-  similarMovieRating: {
+  similarSeriesRating: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  similarMovieRatingText: {
+  similarSeriesRatingText: {
     fontSize: 11,
     color: Colors.textSecondary,
   },
-  noSimilarMovies: {
+  noSimilarSeries: {
     fontSize: 14,
     color: Colors.textTertiary,
     fontStyle: 'italic',

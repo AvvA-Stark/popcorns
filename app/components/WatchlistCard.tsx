@@ -74,7 +74,7 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
       friction={2}
     >
       <Animated.View style={[styles.card, animatedStyle]}>
-        <Pressable 
+        <Pressable
           style={styles.content}
           onPress={handleCardPress}
           onPressIn={handlePressIn}
@@ -111,18 +111,7 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
             )}
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={(e) => {
-            e?.stopPropagation?.();
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onDelete(movie.id);
-          }}
-          activeOpacity={0.7}
-        >
-          <FontAwesome name="trash" size={20} color={colors.error} />
-        </TouchableOpacity>
-      </Pressable>
+        </Pressable>
       </Animated.View>
     </Swipeable>
   );

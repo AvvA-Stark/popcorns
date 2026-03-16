@@ -180,46 +180,46 @@ export default function SeriesScreen() {
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
-          // Debug: log first 3 series' watch providers structure
-          if (seriesData.length > 0) {
-            console.log(`🔍 Debug - Checking region: ${region} (${regionName})`);
-            console.log(`🔍 Debug - Total series before filter: ${seriesData.length}`);
-            seriesData.slice(0, 3).forEach((show: any, index: number) => {
-              console.log(`\n🔍 Series ${index + 1}: ${show.name}`);
-              console.log('   watchProviders:', JSON.stringify(show.watchProviders, null, 2));
-            });
-          }
+          console.log(`🔍 Fetching watch providers for ${seriesData.length} series in region: ${region} (${regionName})`);
           
-          const beforeCount = seriesData.length;
-          seriesData = seriesData.filter((show: any) => {
-            // Check all possible paths for watch providers
-            const providersResults = show.watchProviders?.results?.[region];
-            const providersDirect = show.watchProviders?.[region];
-            const providersAlt = show['watch/providers']?.[region];
+          // Fetch watch providers for all series in parallel
+          const seriesWithProviders = await Promise.all(
+            seriesData.map(async (show: any) => {
+              try {
+                const providers = await tmdb.getTVWatchProviders(show.id, region);
+                return {
+                  ...show,
+                  watchProviders: providers,
+                };
+              } catch (error) {
+                console.error(`Failed to fetch providers for ${show.name}:`, error);
+                return {
+                  ...show,
+                  watchProviders: {},
+                };
+              }
+            })
+          );
+          
+          // Now filter based on the fetched provider data
+          const beforeCount = seriesWithProviders.length;
+          seriesData = seriesWithProviders.filter((show: any) => {
+            const providers = show.watchProviders?.[region];
             
-            const providers = providersResults || providersDirect || providersAlt;
-            
-            // A series is available if it has any provider type (flatrate, rent, or buy)
             if (!providers) {
-              console.log(`   ❌ ${show.name}: No providers found for ${region}`);
               return false;
             }
             
+            // A series is available if it has any provider type (flatrate, rent, or buy)
             const hasProviders = 
               (providers.flatrate && providers.flatrate.length > 0) ||
               (providers.rent && providers.rent.length > 0) ||
               (providers.buy && providers.buy.length > 0);
             
-            if (hasProviders) {
-              console.log(`   ✅ ${show.name}: Available (${providers.flatrate?.length || 0} stream, ${providers.rent?.length || 0} rent, ${providers.buy?.length || 0} buy)`);
-            } else {
-              console.log(`   ❌ ${show.name}: No streaming options in ${region}`);
-            }
-            
             return hasProviders;
           });
           
-          console.log(`\n✅ After region filter: ${seriesData.length}/${beforeCount} series available in ${region}`);
+          console.log(`✅ After region filter: ${seriesData.length}/${beforeCount} series available in ${region}`);
         }
         
         setHasMore(page < response.total_pages && response.total_pages > 0);

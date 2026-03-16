@@ -1,7 +1,7 @@
 /**
  * SwipeTutorialOverlay Component
- * First-run animation that demonstrates swipe gestures
- * Shows once per install, can be dismissed early
+ * Animation that demonstrates swipe gestures
+ * Shows every time the tab is focused
  */
 
 import { useEffect, useState } from 'react';
@@ -15,19 +15,18 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/Colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.35; // Smaller cards for tutorial
 const CARD_HEIGHT = CARD_WIDTH * 1.5;
-const TUTORIAL_KEY = '@popcorns_tutorial_shown';
 
 interface SwipeTutorialOverlayProps {
   onComplete?: () => void;
+  trigger?: boolean; // When this changes to true, restart the animation
 }
 
-export default function SwipeTutorialOverlay({ onComplete }: SwipeTutorialOverlayProps) {
+export default function SwipeTutorialOverlay({ onComplete, trigger = false }: SwipeTutorialOverlayProps) {
   const [visible, setVisible] = useState(false);
   const overlayOpacity = useSharedValue(0);
 
@@ -53,24 +52,40 @@ export default function SwipeTutorialOverlay({ onComplete }: SwipeTutorialOverla
   const superLikeOpacity = useSharedValue(0);
 
   useEffect(() => {
-    checkAndShowTutorial();
-  }, []);
-
-  const checkAndShowTutorial = async () => {
-    try {
-      const hasShown = await AsyncStorage.getItem(TUTORIAL_KEY);
-      if (!hasShown) {
-        setVisible(true);
+    if (trigger) {
+      console.log('🎬 Starting tutorial animation...');
+      setVisible(true);
+      // Reset all values before starting
+      resetAnimation();
+      // Small delay to ensure render
+      setTimeout(() => {
         startAnimation();
-        // Mark as shown
-        await AsyncStorage.setItem(TUTORIAL_KEY, 'true');
-      }
-    } catch (error) {
-      console.error('Error checking tutorial status:', error);
+      }, 50);
     }
+  }, [trigger]);
+
+  const resetAnimation = () => {
+    // Reset all animated values to initial state
+    overlayOpacity.value = 0;
+    card1TranslateX.value = 0;
+    card1TranslateY.value = SCREEN_HEIGHT;
+    card1Rotate.value = 0;
+    card1Opacity.value = 1;
+    card2TranslateX.value = 0;
+    card2TranslateY.value = SCREEN_HEIGHT;
+    card2Rotate.value = 0;
+    card2Opacity.value = 1;
+    card3TranslateX.value = 0;
+    card3TranslateY.value = SCREEN_HEIGHT;
+    card3Rotate.value = 0;
+    card3Opacity.value = 1;
+    nopeOpacity.value = 0;
+    likeOpacity.value = 0;
+    superLikeOpacity.value = 0;
   };
 
   const startAnimation = () => {
+    console.log('▶️ Tutorial animation starting...');
     // Fade in overlay
     overlayOpacity.value = withTiming(1, { duration: 200 });
 
@@ -124,6 +139,7 @@ export default function SwipeTutorialOverlay({ onComplete }: SwipeTutorialOverla
   };
 
   const handleComplete = () => {
+    console.log('✅ Tutorial animation completed');
     setVisible(false);
     onComplete?.();
   };

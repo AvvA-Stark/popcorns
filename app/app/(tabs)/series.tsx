@@ -18,6 +18,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie, TVSeries, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
@@ -27,6 +28,7 @@ import SkeletonCard from '../../components/SkeletonCard';
 import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
+import SwipeTutorialOverlay from '../../components/SwipeTutorialOverlay';
 
 interface Filters {
   genres: number[];
@@ -51,6 +53,7 @@ export default function SeriesScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [swipedCount, setSwipedCount] = useState(0);
   const [randomPage, setRandomPage] = useState(1);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Filter state
   const [filters, setFilters] = useState<Filters>({
@@ -99,6 +102,22 @@ export default function SeriesScreen() {
     setRandomPage(newRandomPage);
     await loadSeries(1, newRandomPage);
   };
+
+  // Trigger tutorial every time this tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('📺 Series tab focused - triggering tutorial');
+      setShowTutorial(false); // Reset first
+      setTimeout(() => {
+        setShowTutorial(true); // Then trigger
+      }, 100);
+      
+      return () => {
+        // Cleanup when tab loses focus
+        setShowTutorial(false);
+      };
+    }, [])
+  );
 
   // Effects
   useEffect(() => {
@@ -808,6 +827,9 @@ export default function SeriesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Tutorial Overlay - shows every time tab is focused */}
+      <SwipeTutorialOverlay trigger={showTutorial} />
     </View>
   );
 }

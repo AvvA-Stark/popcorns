@@ -72,6 +72,49 @@ const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
   'Plex': 'https://www.plex.tv/',
 };
 
+// Profanity filter - basic list (expandable)
+const PROFANITY_LIST = [
+  'fuck',
+  'shit',
+  'bitch',
+  'asshole',
+  'damn',
+  'hell',
+  'crap',
+  'piss',
+  'dick',
+  'cock',
+  'pussy',
+  'bastard',
+  'slut',
+  'whore',
+  'fag',
+  'nigger',
+  'cunt',
+];
+
+// Validation helper for review content
+const isValidReview = (text: string): { valid: boolean; reason?: string } => {
+  const lowerText = text.toLowerCase();
+  
+  // Check for profanity
+  for (const word of PROFANITY_LIST) {
+    // Use word boundaries to catch whole words (e.g., "shit" but not "shirt")
+    const regex = new RegExp(`\\b${word}\\b`, 'i');
+    if (regex.test(lowerText)) {
+      return { valid: false, reason: 'profanity' };
+    }
+  }
+  
+  // Check for links (http://, https://, www.)
+  const urlRegex = /(https?:\/\/|www\.)/i;
+  if (urlRegex.test(text)) {
+    return { valid: false, reason: 'links' };
+  }
+  
+  return { valid: true };
+};
+
 export default function MovieDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -163,6 +206,29 @@ export default function MovieDetailScreen() {
   const saveReview = async () => {
     if (!movie) return;
 
+    const trimmedText = reviewText.trim();
+    
+    // Validate review content
+    const validation = isValidReview(trimmedText);
+    if (!validation.valid) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
+      if (validation.reason === 'profanity') {
+        Alert.alert(
+          t('movieDetail.reviewBlocked'),
+          t('movieDetail.profanityDetected'),
+          [{ text: t('common.ok'), style: 'default' }]
+        );
+      } else if (validation.reason === 'links') {
+        Alert.alert(
+          t('movieDetail.reviewBlocked'),
+          t('movieDetail.linksNotAllowed'),
+          [{ text: t('common.ok'), style: 'default' }]
+        );
+      }
+      return; // Stop submission
+    }
+
     try {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
@@ -171,7 +237,7 @@ export default function MovieDetailScreen() {
       const newReview: UserReview = {
         movieId: movie.id,
         rating: reviewRating,
-        text: reviewText.trim(),
+        text: trimmedText,
         date: new Date().toISOString(),
       };
 

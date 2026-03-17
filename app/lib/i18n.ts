@@ -186,6 +186,9 @@ const en = {
       openProvider: 'Open {{provider}}',
       loadingTrailer: 'Loading trailer...',
       trailerError: 'Could not load trailer',
+      reviewBlocked: 'Review Blocked',
+      profanityDetected: 'Your review contains inappropriate language. Please remove profanity and try again.',
+      linksNotAllowed: 'Reviews cannot contain links. Please remove any URLs and try again.',
     },
 
     // Tutorial Overlay
@@ -383,6 +386,9 @@ const de = {
       openProvider: '{{provider}} öffnen',
       loadingTrailer: 'Trailer wird geladen...',
       trailerError: 'Trailer konnte nicht geladen werden',
+      reviewBlocked: 'Bewertung blockiert',
+      profanityDetected: 'Ihre Bewertung enthält unangemessene Sprache. Bitte entfernen Sie Schimpfwörter und versuchen Sie es erneut.',
+      linksNotAllowed: 'Bewertungen dürfen keine Links enthalten. Bitte entfernen Sie URLs und versuchen Sie es erneut.',
     },
 
     tutorial: {
@@ -577,6 +583,9 @@ const es = {
       openProvider: 'Abrir {{provider}}',
       loadingTrailer: 'Cargando tráiler...',
       trailerError: 'No se pudo cargar el tráiler',
+      reviewBlocked: 'Reseña bloqueada',
+      profanityDetected: 'Tu reseña contiene lenguaje inapropiado. Por favor, elimina las palabras ofensivas e inténtalo de nuevo.',
+      linksNotAllowed: 'Las reseñas no pueden contener enlaces. Por favor, elimina las URLs e inténtalo de nuevo.',
     },
 
     tutorial: {
@@ -771,6 +780,9 @@ const it = {
       openProvider: 'Apri {{provider}}',
       loadingTrailer: 'Caricamento trailer...',
       trailerError: 'Impossibile caricare il trailer',
+      reviewBlocked: 'Recensione bloccata',
+      profanityDetected: 'La tua recensione contiene linguaggio inappropriato. Per favore, rimuovi le parolacce e riprova.',
+      linksNotAllowed: 'Le recensioni non possono contenere link. Per favore, rimuovi gli URL e riprova.',
     },
 
     tutorial: {

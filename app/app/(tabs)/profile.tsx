@@ -4,9 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
 import { getStats, getAccountAge, getAccountCreatedDate, getTopGenres, initializeStats } from '../../utils/stats';
 import { getWatchlistStats } from '../../lib/watchlist';
@@ -41,6 +43,7 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [regionModalVisible, setRegionModalVisible] = useState(false);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
   const loadStats = async () => {
     try {
@@ -86,11 +89,60 @@ export default function ProfileScreen() {
     }
   };
 
+  const loadAvatar = async () => {
+    try {
+      const savedAvatar = await AsyncStorage.getItem('user_avatar');
+      if (savedAvatar) {
+        setAvatarUri(savedAvatar);
+      }
+    } catch (error) {
+      console.error('Error loading avatar:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      // Request permissions
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow access to your photo library to change your avatar.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        await AsyncStorage.setItem('user_avatar', base64Image);
+        setAvatarUri(base64Image);
+        console.log('✅ Avatar updated successfully');
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to update avatar. Please try again.');
+    }
+  };
+
+
+
   // Initialize stats and settings on first load
   useEffect(() => {
     initializeStats().then(() => {
       loadStats();
       loadSettings();
+      loadAvatar();
     });
   }, []);
 
@@ -99,6 +151,7 @@ export default function ProfileScreen() {
     React.useCallback(() => {
       loadStats();
       loadSettings();
+      loadAvatar();
     }, [])
   );
 
@@ -161,8 +214,19 @@ export default function ProfileScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text>
+          <TouchableOpacity onPress={pickImage} activeOpacity={0.7}>
+            <View style={styles.avatar}>
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>👤</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+          <View style={styles.avatarButtons}>
+            <TouchableOpacity style={styles.changePhotoButton} onPress={pickImage}>
+              <Text style={styles.changePhotoText}>📷 Change Photo</Text>
+            </TouchableOpacity>
           </View>
           <Text style={styles.username}>Movie Enthusiast</Text>
           <Text style={styles.bio}>{t('profile.headerBio')}</Text>
@@ -425,10 +489,33 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 3,
     borderColor: Colors.primary,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
   },
   avatarText: {
     fontSize: 48,
   },
+  avatarButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  changePhotoButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  changePhotoText: {
+    color: Colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
   username: {
     fontSize: 24,
     fontWeight: 'bold',

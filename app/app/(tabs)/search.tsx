@@ -25,6 +25,7 @@ import { SkeletonSearchCard } from '../../components/SkeletonCard';
 import CachedImage from '../../components/CachedImage';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import { useToast } from '../../lib/toast';
+import { renderPopcornRating } from '../../utils/popcornRating';
 
 export default function SearchScreen() {
   const { t } = useTranslation();
@@ -163,6 +164,7 @@ export default function SearchScreen() {
               <FontAwesome name="star" size={12} color="#FFD700" />
               <Text style={styles.rating}>{rating}</Text>
             </View>
+            {movie.vote_average > 0 && renderPopcornRating(movie.vote_average, 12)}
           </View>
         </View>
       </Pressable>

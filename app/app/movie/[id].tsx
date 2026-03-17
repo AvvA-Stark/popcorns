@@ -27,6 +27,7 @@ import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '..
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRegion } from '../../context/RegionContext';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
+import { renderPopcornRating } from '../../utils/popcornRating';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -297,6 +298,7 @@ export default function MovieDetailScreen() {
                 <View style={styles.ratingBadge}>
                   <Text style={styles.ratingText}>⭐ {rating}</Text>
                 </View>
+                {renderPopcornRating(movie.vote_average, 14)}
                 <Text style={styles.metaText}>{year}</Text>
                 {runtime && <Text style={styles.metaText}>• {runtime}</Text>}
               </View>
@@ -407,6 +409,7 @@ export default function MovieDetailScreen() {
                         <Text style={styles.similarMovieRatingText}>
                           ⭐ {similarMovie.vote_average.toFixed(1)}
                         </Text>
+                        {renderPopcornRating(similarMovie.vote_average, 12)}
                       </View>
                     </TouchableOpacity>
                   );

@@ -409,7 +409,6 @@ export default function MovieDetailScreen() {
                         <Text style={styles.similarMovieRatingText}>
                           ⭐ {similarMovie.vote_average.toFixed(1)}
                         </Text>
-                        {renderPopcornRating(similarMovie.vote_average, 12)}
                       </View>
                     </TouchableOpacity>
                   );

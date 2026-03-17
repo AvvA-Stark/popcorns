@@ -13,8 +13,8 @@ import { View, Text } from 'react-native';
  * 
  * Rules:
  * - Rating >= 8.2 → 🍿🍿🍿 (3 full, solid)
- * - Rating 7.0-8.1 → 🍿🍿 (2 full, solid)
- * - Rating < 7.0 → 🍿🍿🍿 with last two having opacity 0.3 (dimmer)
+ * - Rating 6.8-8.1 → 🍿🍿 (2 full, solid)
+ * - Rating < 6.8 → 🍿🍿🍿 with last two having opacity 0.3 (dimmer)
  */
 export const renderPopcornRating = (rating: number, size: number = 16): React.ReactElement => {
   const popcorns: React.ReactNode[] = [];
@@ -28,7 +28,7 @@ export const renderPopcornRating = (rating: number, size: number = 16): React.Re
         </Text>
       );
     }
-  } else if (rating >= 7.0) {
+  } else if (rating >= 6.8) {
     // 2 full popcorns + 1 dimmed
     for (let i = 0; i < 2; i++) {
       popcorns.push(

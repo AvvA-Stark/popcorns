@@ -22,6 +22,7 @@ import {
 
 import { useTranslation } from 'react-i18next';
 import Slider from '@react-native-community/slider';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie, TVSeries, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
 import SwipeStack from '../../components/SwipeStack';
@@ -605,6 +606,11 @@ export default function SeriesScreen() {
         styles.contentArea,
         hasActiveFilters() && styles.contentAreaWithFilters
       ]}>
+        <LinearGradient
+          colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0)']}
+          style={styles.gradientOverlay}
+          pointerEvents="none"
+        />
         <SwipeStack
           movies={series}
           onSwipeLeft={handleSwipeLeft}
@@ -873,6 +879,14 @@ const styles = StyleSheet.create({
   },
   contentAreaWithFilters: {
     // No additional padding needed - filter pills are part of header
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    zIndex: 1,
   },
   titleRow: {
     flexDirection: 'row',

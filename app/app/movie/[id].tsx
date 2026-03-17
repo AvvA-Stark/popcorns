@@ -23,7 +23,7 @@ import CachedImage from '../../components/CachedImage';
 import { WebView } from 'react-native-webview';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
-import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie } from '../../lib/tmdb';
+import { tmdb, MovieDetailsComplete, CastMember, WatchProvider, Movie, AwardsData } from '../../lib/tmdb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRegion } from '../../context/RegionContext';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
@@ -138,6 +138,10 @@ export default function MovieDetailScreen() {
   // Similar Movies state
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [similarMoviesLoading, setSimilarMoviesLoading] = useState(false);
+  
+  // Awards state
+  const [awards, setAwards] = useState<AwardsData | null>(null);
+  const [loadingAwards, setLoadingAwards] = useState(false);
 
   useEffect(() => {
     loadMovieDetails();
@@ -149,6 +153,7 @@ export default function MovieDetailScreen() {
   useEffect(() => {
     if (movie) {
       loadSimilarMovies();
+      loadAwards();
     }
   }, [movie?.id]);
 
@@ -335,6 +340,39 @@ export default function MovieDetailScreen() {
     }
   };
 
+  const loadAwards = async () => {
+    if (!movie) return;
+    
+    try {
+      setLoadingAwards(true);
+      
+      // Check cache first
+      const cacheKey = `awards_movie_${movie.id}`;
+      const cached = await AsyncStorage.getItem(cacheKey);
+      
+      if (cached) {
+        console.log(`💾 Awards cache HIT for movie ${movie.id}`);
+        setAwards(JSON.parse(cached));
+      } else {
+        console.log(`🌐 Awards cache MISS for movie ${movie.id} - fetching...`);
+        
+        // Fetch from TMDB (placeholder function for now)
+        const awardsData = await tmdb.fetchMovieAwards(movie.id);
+        
+        // Store in cache
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(awardsData));
+        
+        setAwards(awardsData);
+      }
+    } catch (err) {
+      console.error('Error loading awards:', err);
+      // Set empty awards on error
+      setAwards({ wins: [], nominations: [] });
+    } finally {
+      setLoadingAwards(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -414,6 +452,12 @@ export default function MovieDetailScreen() {
                   <Text style={styles.ratingText}>⭐ {rating}</Text>
                 </View>
                 {renderPopcornRating(movie.vote_average, 14)}
+                {/* Oscar trophy icon if movie has wins */}
+                {awards && awards.wins.length > 0 && (
+                  <View style={styles.oscarBadge}>
+                    <Text style={styles.oscarIcon}>🏆</Text>
+                  </View>
+                )}
                 <Text style={styles.metaText}>{year}</Text>
                 {runtime && <Text style={styles.metaText}>• {runtime}</Text>}
               </View>
@@ -445,6 +489,54 @@ export default function MovieDetailScreen() {
           <Text style={styles.overview}>
             {movie.overview || t('movieDetail.noOverview')}
           </Text>
+
+          {/* Awards Section */}
+          {awards && (awards.wins.length > 0 || awards.nominations.length > 0) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🏆 Awards</Text>
+              {loadingAwards ? (
+                <View style={styles.awardsLoading}>
+                  <ActivityIndicator size="small" color={Colors.accent} />
+                </View>
+              ) : (
+                <View style={styles.awardsContainer}>
+                  {/* Oscar Wins */}
+                  {awards.wins.length > 0 && (
+                    <View style={styles.awardsGroup}>
+                      <Text style={styles.awardsGroupTitle}>
+                        🏆 Won ({awards.wins.length})
+                      </Text>
+                      {awards.wins.map((award, index) => (
+                        <View key={`win-${index}`} style={styles.awardItem}>
+                          <Text style={styles.awardCategory}>{award.category}</Text>
+                          {award.year && (
+                            <Text style={styles.awardYear}>({award.year})</Text>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  
+                  {/* Oscar Nominations */}
+                  {awards.nominations.length > 0 && (
+                    <View style={styles.awardsGroup}>
+                      <Text style={styles.awardsGroupTitle}>
+                        🎬 Nominated ({awards.nominations.length})
+                      </Text>
+                      {awards.nominations.map((award, index) => (
+                        <View key={`nom-${index}`} style={styles.awardItem}>
+                          <Text style={styles.awardCategory}>{award.category}</Text>
+                          {award.year && (
+                            <Text style={styles.awardYear}>({award.year})</Text>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Cast */}
           {topCast.length > 0 && (
@@ -1306,5 +1398,51 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: 16,
+  },
+  // Oscar Awards styles
+  oscarBadge: {
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  oscarIcon: {
+    fontSize: 12,
+  },
+  awardsContainer: {
+    gap: 16,
+  },
+  awardsLoading: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  awardsGroup: {
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  awardsGroupTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  awardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  awardCategory: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  awardYear: {
+    fontSize: 12,
+    color: Colors.textTertiary,
   },
 });

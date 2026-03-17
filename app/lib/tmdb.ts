@@ -192,6 +192,19 @@ export interface DiscoverTVSeriesResponse {
   total_results: number;
 }
 
+export interface Award {
+  award: string;
+  category: string;
+  won: boolean;
+  year: number;
+  nominee?: string;
+}
+
+export interface AwardsData {
+  wins: Award[];
+  nominations: Award[];
+}
+
 // Streaming provider ID mapping
 export const PROVIDER_IDS: Record<string, number> = {
   'Netflix': 8,
@@ -923,6 +936,51 @@ class TMDBClient {
     } catch (error) {
       console.error(`Error fetching similar TV series for ${seriesId}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Fetch movie awards data (with caching)
+   * Note: TMDB doesn't have a native /awards endpoint
+   * This is a placeholder that can be extended with external awards APIs
+   * or static Oscar winner datasets
+   * 
+   * @param movieId - The movie ID
+   * @returns Awards data with wins and nominations
+   */
+  async fetchMovieAwards(movieId: number): Promise<AwardsData> {
+    try {
+      // Check cache first
+      const cacheKey = `awards_${movieId}`;
+      const cached = await getCached<AwardsData>(cacheKey);
+      if (cached) {
+        console.log(`💾 Cache HIT: Awards ${movieId}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from external source or static data
+      console.log(`🌐 Cache MISS: Fetching awards ${movieId}`);
+      
+      // TODO: Integrate with external awards API or static Oscar dataset
+      // For now, return empty awards data
+      // Possible integrations:
+      // - OMDb API (has awards data but requires separate API key)
+      // - Static JSON file with Oscar winners by TMDB ID
+      // - TMDb "keywords" endpoint might contain some award info
+      
+      const awardsData: AwardsData = {
+        wins: [],
+        nominations: [],
+      };
+      
+      // Cache the result (7 days - awards don't change)
+      await setCached(cacheKey, awardsData, CacheTTL.WATCH_PROVIDERS);
+      
+      return awardsData;
+    } catch (error) {
+      console.error(`Error fetching awards for ${movieId}:`, error);
+      // Return empty awards on error
+      return { wins: [], nominations: [] };
     }
   }
 }

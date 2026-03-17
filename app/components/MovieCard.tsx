@@ -13,6 +13,7 @@ import { tmdb } from '../lib/tmdb';
 import CachedImage from './CachedImage';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist, MediaType } from '../lib/watchlist';
 import { useToast } from '../lib/toast';
+import { renderPopcornRating } from '../utils/popcornRating';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.9;
@@ -157,6 +158,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>⭐ {rating}</Text>
             </View>
+            {renderPopcornRating(movie.vote_average, 14)}
             <Text style={styles.year}>{year}</Text>
           </View>
           

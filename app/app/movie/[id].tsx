@@ -142,8 +142,14 @@ export default function MovieDetailScreen() {
     loadMovieDetails();
     checkWatchlistStatus();
     loadReviews();
-    loadSimilarMovies();
   }, [id]);
+
+  // Load similar movies after movie details are available
+  useEffect(() => {
+    if (movie) {
+      loadSimilarMovies();
+    }
+  }, [movie?.id]);
 
   const loadMovieDetails = async () => {
     try {
@@ -278,7 +284,27 @@ export default function MovieDetailScreen() {
     try {
       setSimilarMoviesLoading(true);
       const similar = await tmdb.getSimilarMovies(Number(id));
-      setSimilarMovies(similar.slice(0, 10)); // Limit to 10 movies
+      
+      // Filter: only show movies with at least 1 shared genre AND decent rating
+      if (movie?.genres) {
+        const currentGenreIds = movie.genres.map(g => g.id);
+        const filtered = similar.filter(similarMovie => {
+          // Check genre overlap
+          const hasSharedGenre = similarMovie.genre_ids.some(genreId => 
+            currentGenreIds.includes(genreId)
+          );
+          // Check minimum rating (optional quality filter)
+          const isDecentRating = similarMovie.vote_average >= 5;
+          
+          return hasSharedGenre && isDecentRating;
+        });
+        
+        // If no matches, keep top 1 anyway (better than empty)
+        setSimilarMovies(filtered.length > 0 ? filtered.slice(0, 10) : similar.slice(0, 1));
+      } else {
+        // Fallback: no genre data available, show all (shouldn't happen)
+        setSimilarMovies(similar.slice(0, 10));
+      }
     } catch (err) {
       console.error('Error loading similar movies:', err);
     } finally {

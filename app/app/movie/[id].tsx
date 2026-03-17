@@ -497,6 +497,17 @@ export default function MovieDetailScreen() {
             </View>
           )}
 
+          {/* Watchlist Button */}
+          <TouchableOpacity
+            style={[styles.watchlistButton, isInWatchlistState && styles.watchlistButtonActive]}
+            onPress={toggleWatchlist}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.watchlistButtonText}>
+              {isInWatchlistState ? t('movieDetail.removeFromWatchlist') : t('movieDetail.addToWatchlist')}
+            </Text>
+          </TouchableOpacity>
+
           {/* User Reviews */}
           <View style={styles.section}>
             <View style={styles.reviewsHeader}>
@@ -596,17 +607,6 @@ export default function MovieDetailScreen() {
               </View>
             )}
           </View>
-
-          {/* Watchlist Button */}
-          <TouchableOpacity
-            style={[styles.watchlistButton, isInWatchlistState && styles.watchlistButtonActive]}
-            onPress={toggleWatchlist}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.watchlistButtonText}>
-              {isInWatchlistState ? t('movieDetail.removeFromWatchlist') : t('movieDetail.addToWatchlist')}
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 

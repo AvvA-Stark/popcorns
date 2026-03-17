@@ -3,23 +3,33 @@
  * Display user's saved movies to watch later
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem, TouchableOpacity, Animated as RNAnimated } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { getWatchlist, removeFromWatchlist, WatchlistItem, initializeSync, fullSync } from '../../lib/watchlist';
 import WatchlistCard from '../../components/WatchlistCard';
 import { useToast } from '../../lib/toast';
 import { logSupabaseStatus } from '../../lib/supabase';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 export default function WatchlistScreen() {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const router = useRouter();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [highlightedMovieId, setHighlightedMovieId] = useState<number | null>(null);
+  
+  // Refs for FAB animation and FlatList scrolling
+  const fabPulseAnim = useRef(new RNAnimated.Value(1)).current;
+  const fabScaleAnim = useRef(new RNAnimated.Value(1)).current;
+  const flatListRef = useRef<FlatList>(null);
 
   // Initialize Supabase sync on component mount (one-time)
   useEffect(() => {
@@ -29,6 +39,26 @@ export default function WatchlistScreen() {
     }).catch(err => {
       console.error('⚠️ Supabase sync initialization failed:', err);
     });
+  }, []);
+
+  // FAB pulse animation loop
+  useEffect(() => {
+    const pulseAnimation = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(fabPulseAnim, {
+          toValue: 1.1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        RNAnimated.timing(fabPulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseAnimation.start();
+    return () => pulseAnimation.stop();
   }, []);
 
   // Load watchlist when screen comes into focus
@@ -58,6 +88,50 @@ export default function WatchlistScreen() {
     });
     await loadWatchlist();
     setRefreshing(false);
+  };
+
+  const handleRandomPick = async () => {
+    if (watchlist.length === 0) {
+      showToast({ message: t('watchlist.emptyTitle'), type: 'info' });
+      return;
+    }
+
+    // Haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Animate FAB tap
+    RNAnimated.sequence([
+      RNAnimated.timing(fabScaleAnim, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      RNAnimated.timing(fabScaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Pick random movie
+    const randomIndex = Math.floor(Math.random() * watchlist.length);
+    const randomMovie = watchlist[randomIndex];
+
+    // Highlight the card
+    setHighlightedMovieId(randomMovie.id);
+
+    // Scroll to the card
+    flatListRef.current?.scrollToIndex({
+      index: randomIndex,
+      animated: true,
+      viewPosition: 0.5, // Center the card on screen
+    });
+
+    // Navigate to detail after delay
+    setTimeout(() => {
+      setHighlightedMovieId(null);
+      router.push(`/movie/${randomMovie.id}`);
+    }, 1000);
   };
 
   const handleRemove = async (movieId: number, skipConfirmation: boolean = false) => {
@@ -167,12 +241,17 @@ export default function WatchlistScreen() {
   );
 
   const renderItem: ListRenderItem<WatchlistItem> = ({ item }) => (
-    <WatchlistCard item={item} onRemove={handleRemove} />
+    <WatchlistCard 
+      item={item} 
+      onRemove={handleRemove}
+      isHighlighted={highlightedMovieId === item.id}
+    />
   );
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={watchlist}
         renderItem={renderItem}
         keyExtractor={(item) => `${item.id}-${item.mediaType}-${item.addedAt}`}
@@ -193,7 +272,37 @@ export default function WatchlistScreen() {
         updateCellsBatchingPeriod={50}
         windowSize={10}
         initialNumToRender={10}
+        onScrollToIndexFailed={(info) => {
+          // Handle scroll failure gracefully
+          const wait = new Promise(resolve => setTimeout(resolve, 500));
+          wait.then(() => {
+            flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+          });
+        }}
       />
+      
+      {/* Random Picker FAB */}
+      {watchlist.length > 0 && (
+        <RNAnimated.View
+          style={[
+            styles.fab,
+            {
+              transform: [
+                { scale: fabPulseAnim },
+                { scale: fabScaleAnim },
+              ],
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.fabButton}
+            onPress={handleRandomPick}
+            activeOpacity={0.8}
+          >
+            <FontAwesome name="random" size={24} color="#fff" />
+          </TouchableOpacity>
+        </RNAnimated.View>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -288,5 +397,24 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: Colors.textTertiary,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    zIndex: 999,
+  },
+  fabButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
 });

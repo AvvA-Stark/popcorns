@@ -3,9 +3,9 @@
  * Displays a movie in the user's watchlist with delete option
  */
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -24,19 +24,35 @@ interface WatchlistCardProps {
     voteAverage?: number;
     addedAt: number;
     priority?: 'normal' | 'super';
+    mediaType?: string;
   };
   onRemove: (id: number, skipConfirmation?: boolean) => void;
+  isHighlighted?: boolean;
 }
 
-export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
+export default function WatchlistCard({ item: movie, onRemove: onDelete, isHighlighted = false }: WatchlistCardProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const swipeableRef = useRef<Swipeable>(null);
   const scale = useSharedValue(1);
+  const borderOpacity = useSharedValue(0);
+
+  // Highlight animation when isHighlighted becomes true
+  useEffect(() => {
+    if (isHighlighted) {
+      borderOpacity.value = withSequence(
+        withTiming(1, { duration: 150 }),
+        withTiming(1, { duration: 350 }),
+        withTiming(0, { duration: 150 })
+      );
+    }
+  }, [isHighlighted]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: withSpring(scale.value, { damping: 15, stiffness: 300 }) }],
+      borderWidth: 3,
+      borderColor: `rgba(255, 215, 0, ${borderOpacity.value})`,
     };
   });
 

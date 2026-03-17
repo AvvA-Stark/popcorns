@@ -302,6 +302,10 @@ export default function MovieDetailScreen() {
                 <Text style={styles.metaText}>{year}</Text>
                 {runtime && <Text style={styles.metaText}>• {runtime}</Text>}
               </View>
+              {/* Overview directly under title */}
+              <Text style={styles.headerOverview} numberOfLines={4}>
+                {movie.overview || t('movieDetail.noOverview')}
+              </Text>
             </View>
           </View>
         </View>
@@ -323,12 +327,6 @@ export default function MovieDetailScreen() {
           {movie.tagline && (
             <Text style={styles.tagline}>"{movie.tagline}"</Text>
           )}
-
-          {/* Overview */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('movieDetail.overview')}</Text>
-            <Text style={styles.overview}>{movie.overview || t('movieDetail.noOverview')}</Text>
-          </View>
 
           {/* Cast */}
           {topCast.length > 0 && (
@@ -773,6 +771,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     lineHeight: 28,
+  },
+  headerOverview: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    marginTop: 8,
   },
   metaRow: {
     flexDirection: 'row',

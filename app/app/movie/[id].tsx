@@ -838,7 +838,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   regionIndicator: {
     fontSize: 14,
@@ -850,7 +850,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textSecondary,
     lineHeight: 22,
-    marginTop: 16,
     marginBottom: 16,
   },
   castScroll: {

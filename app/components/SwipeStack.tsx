@@ -12,7 +12,6 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  withSequence,
   runOnJS,
   interpolate,
   Extrapolation,
@@ -34,7 +33,6 @@ interface SwipeStackProps {
   onSwipeLeft?: (item: Movie | TVSeries) => void;
   onSwipeRight?: (item: Movie | TVSeries) => void;
   onSwipeUp?: (item: Movie | TVSeries) => void;
-  shakeOnMount?: boolean; // Trigger a small shake on the top card when true
 }
 
 export default function SwipeStack({
@@ -42,25 +40,10 @@ export default function SwipeStack({
   onSwipeLeft,
   onSwipeRight,
   onSwipeUp,
-  shakeOnMount,
 }: SwipeStackProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const shakeX = useSharedValue(0);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Shake effect on mount
-  useEffect(() => {
-    if (shakeOnMount) {
-      shakeX.value = withSequence(
-        withTiming(6, { duration: 100 }),
-        withTiming(-6, { duration: 100 }),
-        withTiming(6, { duration: 100 }),
-        withTiming(-6, { duration: 100 }),
-        withTiming(0, { duration: 100 })
-      );
-    }
-  }, [shakeOnMount]);
 
   const handleSwipeComplete = useCallback((direction: 'left' | 'right' | 'up') => {
     const currentMovie = movies[currentIndex];
@@ -217,7 +200,7 @@ function SwipeCard({
 
     return {
       transform: [
-        { translateX: translateX.value + shakeX.value },
+        { translateX: translateX.value },
         { translateY: translateY.value },
         { rotate: `${rotation}deg` },
       ],

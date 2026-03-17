@@ -19,7 +19,7 @@ import {
   Platform,
 } from 'react-native';
 
-import { useIsFocused } from '@react-navigation/native';
+
 import { useTranslation } from 'react-i18next';
 import Slider from '@react-native-community/slider';
 import { Colors } from '../../constants/Colors';
@@ -56,7 +56,6 @@ export default function DiscoveryScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [swipedCount, setSwipedCount] = useState(0);
   const [randomPage, setRandomPage] = useState(1);
-  const [shakeTrigger, setShakeTrigger] = useState(false);
 
   // Filter state
   const [filters, setFilters] = useState<Filters>({
@@ -117,16 +116,6 @@ export default function DiscoveryScreen() {
   useEffect(() => {
     loadInitialMovies();
   }, []);
-
-  // Trigger shake animation when tab is focused
-  const isFocused = useIsFocused();
-  useEffect(() => {
-    if (isFocused) {
-      setShakeTrigger(true);
-      const timer = setTimeout(() => setShakeTrigger(false), 2500); // Reset after shake completes
-      return () => clearTimeout(timer);
-    }
-  }, [isFocused]);
 
   useEffect(() => {
     if (filterModalVisible && genres.length === 0) {
@@ -616,7 +605,6 @@ export default function DiscoveryScreen() {
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
           onSwipeUp={handleSwipeUp}
-          shakeOnMount={shakeTrigger}
         />
       </View>
 

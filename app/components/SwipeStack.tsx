@@ -201,7 +201,7 @@ function SwipeCard({
     return {
       transform: [
         { translateX: translateX.value },
-        { translateY: translateY.value + 16 }, // +16 down
+        { translateY: translateY.value + 20 }, // +20 down
         { rotate: `${rotation}deg` },
       ],
     };

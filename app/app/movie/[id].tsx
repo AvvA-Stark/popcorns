@@ -302,10 +302,12 @@ export default function MovieDetailScreen() {
                 <Text style={styles.metaText}>{year}</Text>
                 {runtime && <Text style={styles.metaText}>• {runtime}</Text>}
               </View>
-              {/* Overview directly under title */}
-              <Text style={styles.headerOverview} numberOfLines={4}>
-                {movie.overview || t('movieDetail.noOverview')}
-              </Text>
+              {/* Tagline directly under title */}
+              {movie.tagline && (
+                <Text style={styles.headerTagline} numberOfLines={2}>
+                  {movie.tagline}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -323,10 +325,10 @@ export default function MovieDetailScreen() {
             </View>
           )}
 
-          {/* Tagline */}
-          {movie.tagline && (
-            <Text style={styles.tagline}>"{movie.tagline}"</Text>
-          )}
+          {/* Overview */}
+          <Text style={styles.overview}>
+            {movie.overview || t('movieDetail.noOverview')}
+          </Text>
 
           {/* Cast */}
           {topCast.length > 0 && (
@@ -772,11 +774,12 @@ const styles = StyleSheet.create({
     color: Colors.text,
     lineHeight: 28,
   },
-  headerOverview: {
+  headerTagline: {
     fontSize: 13,
+    fontStyle: 'italic',
     color: Colors.textSecondary,
     lineHeight: 18,
-    marginTop: 8,
+    marginTop: 6,
   },
   metaRow: {
     flexDirection: 'row',
@@ -846,6 +849,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textSecondary,
     lineHeight: 22,
+    marginTop: 16,
+    marginBottom: 16,
   },
   castScroll: {
     marginHorizontal: -20,

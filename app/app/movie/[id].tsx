@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: -16, // Compensate for section marginBottom (32 - 16 = 16px gap)
   },
   watchlistButtonActive: {
     backgroundColor: Colors.success,

@@ -29,7 +29,7 @@ export const renderPopcornRating = (rating: number, size: number = 16): React.Re
       );
     }
   } else if (rating >= 7.0) {
-    // 2 full popcorns
+    // 2 full popcorns + 1 dimmed
     for (let i = 0; i < 2; i++) {
       popcorns.push(
         <Text key={i} style={{ fontSize: size, opacity: 1 }}>
@@ -37,6 +37,11 @@ export const renderPopcornRating = (rating: number, size: number = 16): React.Re
         </Text>
       );
     }
+    popcorns.push(
+      <Text key={2} style={{ fontSize: size, opacity: 0.3 }}>
+        🍿
+      </Text>
+    );
   } else {
     // 1 full + 2 dimmed popcorns
     popcorns.push(

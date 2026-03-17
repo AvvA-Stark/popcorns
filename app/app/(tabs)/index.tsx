@@ -187,8 +187,12 @@ export default function DiscoveryScreen() {
           page,
           region, // Pass region from context for provider filtering
         });
-        // Filter out movies without posters in Discovery
-        moviesData = response.results.filter(movie => movie.poster_path);
+        // Filter out movies without posters or ratings in Discovery
+        moviesData = response.results.filter(movie => 
+          movie.poster_path && 
+          movie.vote_average && 
+          movie.vote_average > 0
+        );
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
@@ -253,8 +257,12 @@ export default function DiscoveryScreen() {
           page: pageToUse,
           year_gte: currentYear - 40
         });
-        // Filter out movies without posters in Discovery
-        moviesData = response.results.filter(movie => movie.poster_path);
+        // Filter out movies without posters or ratings in Discovery
+        moviesData = response.results.filter(movie => 
+          movie.poster_path && 
+          movie.vote_average && 
+          movie.vote_average > 0
+        );
         setHasMore(true); // Always has more in random mode
       }
 

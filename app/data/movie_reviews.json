@@ -1,0 +1,402 @@
+{
+  "movie_id_533535": [
+    {
+      "author": "User380",
+      "rating": 4,
+      "text": "Pure entertainment from beginning to end.",
+      "created_at": "2026-03-07T23:16:30.701Z"
+    },
+    {
+      "author": "User337",
+      "rating": 10,
+      "text": "Loved every minute of it!",
+      "created_at": "2025-12-29T23:16:30.701Z"
+    },
+    {
+      "author": "User931",
+      "rating": 10,
+      "text": "Powerful storytelling at its finest.",
+      "created_at": "2026-01-29T23:16:30.701Z"
+    }
+  ],
+  "movie_id_558449": [
+    {
+      "author": "User575",
+      "rating": 5,
+      "text": "Visually stunning and emotionally powerful.",
+      "created_at": "2025-12-29T23:16:30.701Z"
+    },
+    {
+      "author": "User740",
+      "rating": 8,
+      "text": "Visually stunning and emotionally powerful.",
+      "created_at": "2026-02-25T23:16:30.701Z"
+    },
+    {
+      "author": "User189",
+      "rating": 8,
+      "text": "Worth a viewing if you're a fan.",
+      "created_at": "2026-03-13T23:16:30.701Z"
+    }
+  ],
+  "movie_id_693134": [
+    {
+      "author": "User192",
+      "rating": 8,
+      "text": "Enjoyed it more than I expected.",
+      "created_at": "2026-01-04T23:16:30.701Z"
+    },
+    {
+      "author": "User519",
+      "rating": 4,
+      "text": "I'll be thinking about this one for a while.",
+      "created_at": "2026-01-07T23:16:30.701Z"
+    },
+    {
+      "author": "User529",
+      "rating": 7,
+      "text": "Watchable but forgettable.",
+      "created_at": "2025-12-23T23:16:30.701Z"
+    }
+  ],
+  "movie_id_912649": [
+    {
+      "author": "User297",
+      "rating": 9,
+      "text": "The perfect movie for a night in.",
+      "created_at": "2026-02-20T23:16:30.701Z"
+    },
+    {
+      "author": "User482",
+      "rating": 4,
+      "text": "The plot twists kept me on the edge of my seat.",
+      "created_at": "2026-02-19T23:16:30.701Z"
+    },
+    {
+      "author": "User801",
+      "rating": 5,
+      "text": "Beautifully shot, captivating story.",
+      "created_at": "2026-03-14T23:16:30.701Z"
+    }
+  ],
+  "movie_id_823464": [
+    {
+      "author": "User537",
+      "rating": 8,
+      "text": "The cast chemistry was perfect.",
+      "created_at": "2026-01-21T23:16:30.701Z"
+    },
+    {
+      "author": "User962",
+      "rating": 8,
+      "text": "Watchable but forgettable.",
+      "created_at": "2026-02-27T23:16:30.701Z"
+    },
+    {
+      "author": "User470",
+      "rating": 5,
+      "text": "Well-made with a few standout scenes.",
+      "created_at": "2026-03-08T23:16:30.701Z"
+    }
+  ],
+  "movie_id_592983": [
+    {
+      "author": "User541",
+      "rating": 6,
+      "text": "Beautifully shot, captivating story.",
+      "created_at": "2026-01-06T23:16:30.701Z"
+    },
+    {
+      "author": "User731",
+      "rating": 5,
+      "text": "An instant classic in my book.",
+      "created_at": "2026-03-12T23:16:30.701Z"
+    },
+    {
+      "author": "User290",
+      "rating": 7,
+      "text": "Had potential but fell a bit short.",
+      "created_at": "2026-03-08T23:16:30.701Z"
+    }
+  ],
+  "movie_id_573435": [
+    {
+      "author": "User412",
+      "rating": 4,
+      "text": "Visually stunning and emotionally powerful.",
+      "created_at": "2026-02-22T23:16:30.701Z"
+    },
+    {
+      "author": "User469",
+      "rating": 4,
+      "text": "Visually stunning and emotionally powerful.",
+      "created_at": "2026-02-20T23:16:30.701Z"
+    },
+    {
+      "author": "User888",
+      "rating": 5,
+      "text": "One of the best films I've seen this year.",
+      "created_at": "2026-02-02T23:16:30.701Z"
+    }
+  ],
+  "movie_id_917496": [
+    {
+      "author": "User968",
+      "rating": 9,
+      "text": "Solid performances and great writing.",
+      "created_at": "2025-12-17T23:16:30.701Z"
+    },
+    {
+      "author": "User509",
+      "rating": 7,
+      "text": "Loved every minute of it!",
+      "created_at": "2026-02-08T23:16:30.701Z"
+    },
+    {
+      "author": "User193",
+      "rating": 8,
+      "text": "I'll be thinking about this one for a while.",
+      "created_at": "2026-02-05T23:16:30.701Z"
+    }
+  ],
+  "movie_id_1034541": [
+    {
+      "author": "User762",
+      "rating": 4,
+      "text": "Good but not great.",
+      "created_at": "2026-03-09T23:16:30.701Z"
+    },
+    {
+      "author": "User910",
+      "rating": 8,
+      "text": "Beautifully shot, captivating story.",
+      "created_at": "2025-12-19T23:16:30.701Z"
+    },
+    {
+      "author": "User247",
+      "rating": 10,
+      "text": "Worth a viewing if you're a fan.",
+      "created_at": "2026-01-12T23:16:30.701Z"
+    }
+  ],
+  "movie_id_1184918": [
+    {
+      "author": "User168",
+      "rating": 4,
+      "text": "Some great moments throughout.",
+      "created_at": "2025-12-18T23:16:30.701Z"
+    },
+    {
+      "author": "User541",
+      "rating": 5,
+      "text": "Could have been better but still fun.",
+      "created_at": "2025-12-17T23:16:30.701Z"
+    },
+    {
+      "author": "User562",
+      "rating": 8,
+      "text": "A perfect blend of action and drama.",
+      "created_at": "2026-02-28T23:16:30.701Z"
+    }
+  ],
+  "movie_id_278": [
+    {
+      "author": "User858",
+      "rating": 6,
+      "text": "Beautifully shot, captivating story.",
+      "created_at": "2026-02-21T23:16:30.701Z"
+    },
+    {
+      "author": "User553",
+      "rating": 8,
+      "text": "Absolutely loved it! A masterpiece.",
+      "created_at": "2026-01-12T23:16:30.701Z"
+    },
+    {
+      "author": "User281",
+      "rating": 8,
+      "text": "Enjoyed it more than I expected.",
+      "created_at": "2026-01-26T23:16:30.701Z"
+    }
+  ],
+  "movie_id_238": [
+    {
+      "author": "User727",
+      "rating": 7,
+      "text": "Well-made with a few standout scenes.",
+      "created_at": "2026-01-13T23:16:30.701Z"
+    },
+    {
+      "author": "User512",
+      "rating": 5,
+      "text": "Mixed feelings but decent overall.",
+      "created_at": "2025-12-20T23:16:30.701Z"
+    },
+    {
+      "author": "User978",
+      "rating": 5,
+      "text": "Mixed feelings but decent overall.",
+      "created_at": "2026-03-02T23:16:30.701Z"
+    }
+  ],
+  "movie_id_240": [
+    {
+      "author": "User266",
+      "rating": 10,
+      "text": "Watchable but forgettable.",
+      "created_at": "2026-02-17T23:16:30.701Z"
+    },
+    {
+      "author": "User392",
+      "rating": 4,
+      "text": "Brilliantly executed from start to finish.",
+      "created_at": "2026-01-20T23:16:30.701Z"
+    },
+    {
+      "author": "User342",
+      "rating": 8,
+      "text": "It was okay, nothing special.",
+      "created_at": "2026-03-15T23:16:30.701Z"
+    }
+  ],
+  "movie_id_155": [
+    {
+      "author": "User524",
+      "rating": 5,
+      "text": "The director nailed it.",
+      "created_at": "2026-02-08T23:16:30.701Z"
+    },
+    {
+      "author": "User931",
+      "rating": 4,
+      "text": "Had potential but fell a bit short.",
+      "created_at": "2026-02-16T23:16:30.701Z"
+    },
+    {
+      "author": "User238",
+      "rating": 9,
+      "text": "It was okay, nothing special.",
+      "created_at": "2026-03-10T23:16:30.701Z"
+    }
+  ],
+  "movie_id_244786": [
+    {
+      "author": "User335",
+      "rating": 7,
+      "text": "Could have been better but still fun.",
+      "created_at": "2026-01-17T23:16:30.701Z"
+    },
+    {
+      "author": "User906",
+      "rating": 5,
+      "text": "I'll be thinking about this one for a while.",
+      "created_at": "2026-02-19T23:16:30.701Z"
+    },
+    {
+      "author": "User929",
+      "rating": 5,
+      "text": "A must-watch for any movie lover.",
+      "created_at": "2026-01-29T23:16:30.701Z"
+    }
+  ],
+  "movie_id_680": [
+    {
+      "author": "User297",
+      "rating": 6,
+      "text": "Pretty good overall, worth watching.",
+      "created_at": "2026-01-28T23:16:30.701Z"
+    },
+    {
+      "author": "User161",
+      "rating": 4,
+      "text": "Worth a viewing if you're a fan.",
+      "created_at": "2026-01-23T23:16:30.701Z"
+    },
+    {
+      "author": "User434",
+      "rating": 5,
+      "text": "A visual feast with substance.",
+      "created_at": "2026-01-02T23:16:30.701Z"
+    }
+  ],
+  "movie_id_13": [
+    {
+      "author": "User818",
+      "rating": 8,
+      "text": "Pure entertainment from beginning to end.",
+      "created_at": "2026-01-14T23:16:30.701Z"
+    },
+    {
+      "author": "User775",
+      "rating": 5,
+      "text": "A perfect blend of action and drama.",
+      "created_at": "2026-03-02T23:16:30.701Z"
+    },
+    {
+      "author": "User315",
+      "rating": 7,
+      "text": "The special effects were mind-blowing.",
+      "created_at": "2026-02-12T23:16:30.701Z"
+    }
+  ],
+  "movie_id_497": [
+    {
+      "author": "User728",
+      "rating": 7,
+      "text": "One of the best films I've seen this year.",
+      "created_at": "2026-01-27T23:16:30.701Z"
+    },
+    {
+      "author": "User615",
+      "rating": 5,
+      "text": "Some great moments throughout.",
+      "created_at": "2026-01-06T23:16:30.701Z"
+    },
+    {
+      "author": "User622",
+      "rating": 5,
+      "text": "Amazing direction and perfect pacing.",
+      "created_at": "2026-01-20T23:16:30.701Z"
+    }
+  ],
+  "movie_id_637": [
+    {
+      "author": "User190",
+      "rating": 7,
+      "text": "The director nailed it.",
+      "created_at": "2026-01-16T23:16:30.701Z"
+    },
+    {
+      "author": "User950",
+      "rating": 5,
+      "text": "Pretty good overall, worth watching.",
+      "created_at": "2026-02-18T23:16:30.701Z"
+    },
+    {
+      "author": "User889",
+      "rating": 10,
+      "text": "Incredible performances all around.",
+      "created_at": "2026-01-06T23:16:30.701Z"
+    }
+  ],
+  "movie_id_603": [
+    {
+      "author": "User399",
+      "rating": 5,
+      "text": "Everything I wanted and more.",
+      "created_at": "2026-02-27T23:16:30.701Z"
+    },
+    {
+      "author": "User577",
+      "rating": 5,
+      "text": "Had potential but fell a bit short.",
+      "created_at": "2025-12-18T23:16:30.701Z"
+    },
+    {
+      "author": "User424",
+      "rating": 6,
+      "text": "Decent watch, has its moments.",
+      "created_at": "2026-03-17T23:16:30.701Z"
+    }
+  ]
+}

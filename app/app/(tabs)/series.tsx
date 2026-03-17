@@ -188,8 +188,10 @@ export default function SeriesScreen() {
           page,
           region, // Pass region from context for provider filtering
         });
-        // Filter out series without posters in Discovery
-        seriesData = response.results.filter(show => show.poster_path);
+        // Filter out series without posters or ratings in Discovery
+        seriesData = response.results.filter(show => 
+          show.poster_path && show.vote_average && show.vote_average > 0
+        );
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
@@ -254,8 +256,10 @@ export default function SeriesScreen() {
           page: pageToUse,
           year_gte: currentYear - 40
         });
-        // Filter out series without posters in Discovery
-        seriesData = response.results.filter(show => show.poster_path);
+        // Filter out series without posters or ratings in Discovery
+        seriesData = response.results.filter(show => 
+          show.poster_path && show.vote_average && show.vote_average > 0
+        );
         setHasMore(true); // Always has more in random mode
       }
 

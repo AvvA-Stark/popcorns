@@ -28,6 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRegion } from '../../context/RegionContext';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import { renderPopcornRating } from '../../utils/popcornRating';
+import syntheticReviews from '../../data/movie_reviews.json';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -197,13 +198,35 @@ export default function MovieDetailScreen() {
 
   const loadReviews = async () => {
     try {
+      // Load real user reviews from AsyncStorage
       const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+      let realUserReviews: UserReview[] = [];
+      
       if (reviewsJson) {
         const allReviews: UserReview[] = JSON.parse(reviewsJson);
         // Filter reviews for this movie
-        const movieReviews = allReviews.filter(r => r.movieId === Number(id));
-        setReviews(movieReviews);
+        realUserReviews = allReviews.filter(r => r.movieId === Number(id));
       }
+      
+      // Load synthetic reviews for this movie
+      const movieKey = `movie_id_${id}`;
+      const syntheticMovieReviews = (syntheticReviews as Record<string, any[]>)[movieKey] || [];
+      
+      // Convert synthetic reviews to UserReview format
+      const convertedSyntheticReviews: UserReview[] = syntheticMovieReviews.map((review) => ({
+        movieId: Number(id),
+        rating: review.rating,
+        text: review.text,
+        date: review.created_at,
+      }));
+      
+      // Combine: synthetic reviews first, then real user reviews
+      const combinedReviews = [...convertedSyntheticReviews, ...realUserReviews];
+      
+      // Sort by date descending (newest first)
+      combinedReviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      setReviews(combinedReviews);
     } catch (err) {
       console.error('Error loading reviews:', err);
     }

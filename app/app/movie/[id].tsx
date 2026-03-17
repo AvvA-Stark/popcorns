@@ -326,6 +326,7 @@ export default function MovieDetailScreen() {
           )}
 
           {/* Overview */}
+          <Text style={styles.sectionTitle}>{t('movieDetail.overview')}</Text>
           <Text style={styles.overview}>
             {movie.overview || t('movieDetail.noOverview')}
           </Text>

@@ -18,6 +18,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import CachedImage from '../../components/CachedImage';
 import { WebView } from 'react-native-webview';
 import * as Haptics from 'expo-haptics';
@@ -71,9 +72,10 @@ const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
 };
 
 export default function MovieDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { region, regionName } = useRegion();
+  const { region } = useRegion();
   const [movie, setMovie] = useState<MovieDetailsComplete | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export default function MovieDetailScreen() {
       setMovie(details);
     } catch (err) {
       console.error('Error loading movie details:', err);
-      setError('Failed to load movie details. Please try again.');
+      setError(t('movieDetail.error'));
     } finally {
       setLoading(false);
     }
@@ -221,7 +223,7 @@ export default function MovieDetailScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={Colors.accent} />
-        <Text style={styles.loadingText}>Loading movie details...</Text>
+        <Text style={styles.loadingText}>{t('movieDetail.loading')}</Text>
       </View>
     );
   }
@@ -230,9 +232,9 @@ export default function MovieDetailScreen() {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorIcon}>😞</Text>
-        <Text style={styles.errorText}>{error || 'Movie not found'}</Text>
+        <Text style={styles.errorText}>{error || t('movieDetail.notFound')}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={loadMovieDetails}>
-          <Text style={styles.retryButtonText}>Try Again</Text>
+          <Text style={styles.retryButtonText}>{t('movieDetail.tryAgain')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -322,14 +324,14 @@ export default function MovieDetailScreen() {
 
           {/* Overview */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Overview</Text>
-            <Text style={styles.overview}>{movie.overview || 'No overview available.'}</Text>
+            <Text style={styles.sectionTitle}>{t('movieDetail.overview')}</Text>
+            <Text style={styles.overview}>{movie.overview || t('movieDetail.noOverview')}</Text>
           </View>
 
           {/* Cast */}
           {topCast.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Cast</Text>
+              <Text style={styles.sectionTitle}>{t('movieDetail.cast')}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -364,7 +366,7 @@ export default function MovieDetailScreen() {
 
           {/* Similar Movies */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Similar Movies</Text>
+            <Text style={styles.sectionTitle}>{t('movieDetail.similarMovies')}</Text>
             {similarMoviesLoading ? (
               <View style={styles.similarMoviesLoading}>
                 <ActivityIndicator size="small" color={Colors.accent} />
@@ -411,14 +413,14 @@ export default function MovieDetailScreen() {
                 })}
               </ScrollView>
             ) : (
-              <Text style={styles.noSimilarMovies}>No similar movies found</Text>
+              <Text style={styles.noSimilarMovies}>{t('movieDetail.noSimilarMovies')}</Text>
             )}
           </View>
 
           {/* Streaming Providers */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Where to Watch</Text>
-            <Text style={styles.regionIndicator}>in {regionName} ({region})</Text>
+            <Text style={styles.sectionTitle}>{t('movieDetail.whereToWatch')}</Text>
+            <Text style={styles.regionIndicator}>{t('movieDetail.availableIn', { region: t('regions.' + region), code: region })}</Text>
             {streamingServices.length > 0 ? (
               <View style={styles.providersContainer}>
                 {streamingServices.map((provider) => {
@@ -470,14 +472,14 @@ export default function MovieDetailScreen() {
                 })}
               </View>
             ) : (
-              <Text style={styles.noProviders}>Not available for streaming</Text>
+              <Text style={styles.noProviders}>{t('movieDetail.notAvailable')}</Text>
             )}
           </View>
 
           {/* Trailer */}
           {trailer && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Trailer</Text>
+              <Text style={styles.sectionTitle}>{t('movieDetail.trailer')}</Text>
               <TouchableOpacity
                 style={styles.trailerButton}
                 onPress={() => {
@@ -488,7 +490,7 @@ export default function MovieDetailScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.trailerIcon}>▶️</Text>
-                <Text style={styles.trailerButtonText}>Watch Trailer</Text>
+                <Text style={styles.trailerButtonText}>{t('movieDetail.watchTrailer')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -496,14 +498,14 @@ export default function MovieDetailScreen() {
           {/* User Reviews */}
           <View style={styles.section}>
             <View style={styles.reviewsHeader}>
-              <Text style={styles.sectionTitle}>User Reviews</Text>
+              <Text style={styles.sectionTitle}>{t('movieDetail.userReviews')}</Text>
               <TouchableOpacity
                 style={styles.addReviewButton}
                 onPress={() => setShowReviewForm(!showReviewForm)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.addReviewButtonText}>
-                  {showReviewForm ? '✕ Cancel' : '+ Add Review'}
+                  {showReviewForm ? t('movieDetail.cancelReview') : t('movieDetail.addReview')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -511,7 +513,7 @@ export default function MovieDetailScreen() {
             {/* Review Form */}
             {showReviewForm && (
               <View style={styles.reviewForm}>
-                <Text style={styles.reviewFormLabel}>Your Rating (1-10)</Text>
+                <Text style={styles.reviewFormLabel}>{t('movieDetail.yourRating')}</Text>
                 <View style={styles.ratingSelector}>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                     <TouchableOpacity
@@ -534,10 +536,10 @@ export default function MovieDetailScreen() {
                   ))}
                 </View>
                 
-                <Text style={styles.reviewFormLabel}>Your Review (Optional)</Text>
+                <Text style={styles.reviewFormLabel}>{t('movieDetail.yourReview')}</Text>
                 <TextInput
                   style={styles.reviewInput}
-                  placeholder="Share your thoughts..."
+                  placeholder={t('movieDetail.shareThoughts')}
                   placeholderTextColor={Colors.textTertiary}
                   value={reviewText}
                   onChangeText={setReviewText}
@@ -550,7 +552,7 @@ export default function MovieDetailScreen() {
                   onPress={saveReview}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.submitReviewButtonText}>Submit Review</Text>
+                  <Text style={styles.submitReviewButtonText}>{t('movieDetail.submitReview')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -577,17 +579,17 @@ export default function MovieDetailScreen() {
               <View style={styles.noReviewsContainer}>
                 <Text style={styles.noReviewsIcon}>📝</Text>
                 <Text style={styles.noReviews}>
-                  No reviews yet
+                  {t('movieDetail.noReviews')}
                 </Text>
                 <Text style={styles.noReviewsSubtext}>
-                  Share your thoughts and be the first to review!
+                  {t('movieDetail.beFirst')}
                 </Text>
                 <TouchableOpacity
                   style={styles.firstReviewButton}
                   onPress={() => setShowReviewForm(true)}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.firstReviewButtonText}>✍️ Write First Review</Text>
+                  <Text style={styles.firstReviewButtonText}>{t('movieDetail.writeFirstReview')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -600,7 +602,7 @@ export default function MovieDetailScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.watchlistButtonText}>
-              {isInWatchlistState ? '✓ Remove from Watchlist' : '+ Add to Watchlist'}
+              {isInWatchlistState ? t('movieDetail.removeFromWatchlist') : t('movieDetail.addToWatchlist')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -644,7 +646,7 @@ export default function MovieDetailScreen() {
                   setTrailerLoading(false);
                   
                   // Show error alert
-                  Alert.alert('Error', 'Could not load trailer');
+                  Alert.alert(t('movieDetail.trailerError'), '');
                   
                   // Fallback: Open in YouTube app
                   if (trailer) {
@@ -657,7 +659,7 @@ export default function MovieDetailScreen() {
               {trailerLoading && (
                 <View style={styles.trailerLoadingOverlay}>
                   <ActivityIndicator size="large" color={Colors.accent} />
-                  <Text style={styles.trailerLoadingText}>Loading trailer...</Text>
+                  <Text style={styles.trailerLoadingText}>{t('movieDetail.loadingTrailer')}</Text>
                 </View>
               )}
             </View>

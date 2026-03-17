@@ -13,43 +13,13 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import { getRegion, setRegionOverride, clearRegionOverride } from '../../lib/region';
+import { REGIONS } from '../../utils/settings';
 
-interface RegionPickerProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-interface Region {
-  code: string;
-  name: string;
-}
-
-const REGIONS: Region[] = [
-  { code: 'BG', name: '🇧🇬 Bulgaria' },
-  { code: 'US', name: '🇺🇸 United States' },
-  { code: 'GB', name: '🇬🇧 United Kingdom' },
-  { code: 'DE', name: '🇩🇪 Germany' },
-  { code: 'FR', name: '🇫🇷 France' },
-  { code: 'ES', name: '🇪🇸 Spain' },
-  { code: 'IT', name: '🇮🇹 Italy' },
-  { code: 'CA', name: '🇨🇦 Canada' },
-  { code: 'AU', name: '🇦🇺 Australia' },
-  { code: 'NL', name: '🇳🇱 Netherlands' },
-  { code: 'SE', name: '🇸🇪 Sweden' },
-  { code: 'NO', name: '🇳🇴 Norway' },
-  { code: 'DK', name: '🇩🇰 Denmark' },
-  { code: 'FI', name: '🇫🇮 Finland' },
-  { code: 'PL', name: '🇵🇱 Poland' },
-  { code: 'RO', name: '🇷🇴 Romania' },
-  { code: 'GR', name: '🇬🇷 Greece' },
-  { code: 'PT', name: '🇵🇹 Portugal' },
-  { code: 'CH', name: '🇨🇭 Switzerland' },
-  { code: 'AT', name: '🇦🇹 Austria' },
-];
-
-export default function RegionPicker({ visible, onClose }: RegionPickerProps) {
+export default function RegionPicker({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   const [currentRegion, setCurrentRegion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -119,14 +89,14 @@ export default function RegionPicker({ visible, onClose }: RegionPickerProps) {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Select Region</Text>
+          <Text style={styles.title}>{t('profile.selectRegion')}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
         </View>
 
         <Text style={styles.subtitle}>
-          Choose your region to see available streaming providers
+          {t('profile.regionDescription', { default: 'Choose your region to see available streaming providers' })}
         </Text>
 
         {loading ? (
@@ -147,8 +117,8 @@ export default function RegionPicker({ visible, onClose }: RegionPickerProps) {
             >
               <Text style={styles.regionIcon}>🌍</Text>
               <View style={styles.regionTextContainer}>
-                <Text style={styles.regionName}>Auto-detect</Text>
-                <Text style={styles.regionSubtext}>Use your device location</Text>
+                <Text style={styles.regionName}>{t('common.autoDetect', { default: 'Auto-detect' })}</Text>
+                <Text style={styles.regionSubtext}>{t('common.useDeviceLocation', { default: 'Use your device location' })}</Text>
               </View>
               {currentRegion && !REGIONS.find(r => r.code === currentRegion) && (
                 <Text style={styles.checkmark}>✓</Text>
@@ -167,7 +137,7 @@ export default function RegionPicker({ visible, onClose }: RegionPickerProps) {
                   onPress={() => handleSelectRegion(region.code)}
                   disabled={saving}
                 >
-                  <Text style={styles.regionName}>{region.name}</Text>
+                  <Text style={styles.regionName}>{region.flag} {t('regions.' + region.code)}</Text>
                   {isSelected && <Text style={styles.checkmark}>✓</Text>}
                 </TouchableOpacity>
               );

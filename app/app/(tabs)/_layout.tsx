@@ -6,10 +6,13 @@
 import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
 import { Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import RegionPicker from '../components/RegionPicker';
+import { REGIONS } from '../../utils/settings';
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
   const [regionPickerVisible, setRegionPickerVisible] = useState(false);
 
   return (
@@ -49,7 +52,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Discover',
+          title: t('tabs.discover'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🎬</Text>,
           headerShown: false,
         }}
@@ -57,7 +60,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="series"
         options={{
-          title: 'Series',
+          title: t('tabs.series'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📺</Text>,
           headerShown: false,
         }}
@@ -65,21 +68,21 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="watchlist"
         options={{
-          title: 'Watchlist',
+          title: t('tabs.watchlist'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🍿</Text>,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: t('tabs.search'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🔍</Text>,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
         }}
       />

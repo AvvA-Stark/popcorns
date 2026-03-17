@@ -14,6 +14,7 @@ import Animated, {
   withDelay,
   runOnJS,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/Colors';
 
 export type ToastType = 'success' | 'info' | 'error';
@@ -31,6 +32,7 @@ export default function Toast({
   duration = 2000,
   onDismiss 
 }: ToastProps) {
+  const { t } = useTranslation();
   const translateY = useSharedValue(100);
   const opacity = useSharedValue(0);
 

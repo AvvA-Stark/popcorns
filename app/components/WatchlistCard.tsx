@@ -5,9 +5,10 @@
 
 import { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Colors as colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
@@ -28,6 +29,7 @@ interface WatchlistCardProps {
 }
 
 export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const swipeableRef = useRef<Swipeable>(null);
   const scale = useSharedValue(1);
@@ -64,7 +66,7 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
         activeOpacity={0.8}
       >
         <FontAwesome name="trash" size={24} color="#fff" />
-        <Text style={styles.deleteSwipeText}>Delete</Text>
+        <Text style={styles.deleteSwipeText}>{t('common.delete')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -102,15 +104,15 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
             </View>
           </View>
           <Text style={styles.overview} numberOfLines={2}>
-            {movie.overview || 'No description available.'}
+            {movie.overview || t('movieDetail.noOverview')}
           </Text>
           <View style={styles.footer}>
             <Text style={styles.addedDate}>
-              Added: {new Date(movie.addedAt).toLocaleDateString()}
+              {t('watchlist.addedDate', { date: new Date(movie.addedAt).toLocaleDateString() })}
             </Text>
             {movie.priority === 'super' && (
               <View style={styles.superBadge}>
-                <Text style={styles.superBadgeText}>★ SUPER LIKE</Text>
+                <Text style={styles.superBadgeText}>★ {t('profile.superLikes')}</Text>
               </View>
             )}
           </View>

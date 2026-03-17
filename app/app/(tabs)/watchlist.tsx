@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, ListRenderItem } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import { getWatchlist, removeFromWatchlist, WatchlistItem, initializeSync, fullSync } from '../../lib/watchlist';
 import WatchlistCard from '../../components/WatchlistCard';
@@ -14,6 +15,7 @@ import { useToast } from '../../lib/toast';
 import { logSupabaseStatus } from '../../lib/supabase';
 
 export default function WatchlistScreen() {
+  const { t } = useTranslation();
   const { showToast } = useToast();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,14 +69,14 @@ export default function WatchlistScreen() {
         await removeFromWatchlist(movieId, movie.mediaType);
         setWatchlist(prev => prev.filter(item => !(item.id === movieId && item.mediaType === movie.mediaType)));
         showToast({ 
-          message: `Removed "${movie.title}" from watchlist`, 
+          message: t('watchlist.removedMessage', { title: movie.title }), 
           type: 'info' 
         });
         console.log(`🗑️ Removed ${movie.title} from watchlist`);
       } catch (error) {
         console.error('Error removing from watchlist:', error);
         showToast({ 
-          message: 'Failed to remove from watchlist', 
+          message: t('watchlist.failedToRemove'), 
           type: 'error' 
         });
       }
@@ -86,15 +88,15 @@ export default function WatchlistScreen() {
     } else {
       // For button tap: show confirmation alert
       Alert.alert(
-        'Remove from Watchlist',
-        `Remove "${movie.title}" from your watchlist?`,
+        t('watchlist.removeConfirm', { title: movie.title }),
+        '',
         [
           {
-            text: 'Cancel',
+            text: t('common.cancel'),
             style: 'cancel',
           },
           {
-            text: 'Remove',
+            text: t('watchlist.removeButton'),
             style: 'destructive',
             onPress: performDelete,
           },
@@ -110,7 +112,7 @@ export default function WatchlistScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>📋 Your Watchlist</Text>
+          <Text style={styles.title}>{t('watchlist.title')}</Text>
         </View>
       </View>
     );
@@ -118,20 +120,20 @@ export default function WatchlistScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.title}>📋 Your Watchlist</Text>
+      <Text style={styles.title}>{t('watchlist.title')}</Text>
       {watchlist.length > 0 ? (
         <View style={styles.stats}>
           <Text style={styles.statsText}>
-            {watchlist.length} {watchlist.length === 1 ? 'movie' : 'movies'}
+            {t('watchlist.stats', { count: watchlist.length })}
           </Text>
           {superLikedCount > 0 && (
             <Text style={styles.statsDetail}>
-              ⭐ {superLikedCount} super {superLikedCount === 1 ? 'like' : 'likes'}
+              ⭐ {t('watchlist.statsDetail', { count: superLikedCount })}
             </Text>
           )}
         </View>
       ) : (
-        <Text style={styles.subtitle}>Movies you want to watch</Text>
+        <Text style={styles.subtitle}>{t('watchlist.subtitle')}</Text>
       )}
     </View>
   );
@@ -139,18 +141,18 @@ export default function WatchlistScreen() {
   const renderEmpty = () => (
     <View style={styles.emptyState}>
       <Text style={styles.emptyIcon}>🍿</Text>
-      <Text style={styles.emptyText}>Your watchlist is empty</Text>
+      <Text style={styles.emptyText}>{t('watchlist.emptyTitle')}</Text>
       <Text style={styles.emptySubtext}>
-        Start discovering movies and swipe right to add them here
+        {t('watchlist.emptyText')}
       </Text>
       <View style={styles.emptyHintRow}>
         <View style={styles.emptyHint}>
           <Text style={styles.emptyHintIcon}>👉</Text>
-          <Text style={styles.emptyHintText}>Like</Text>
+          <Text style={styles.emptyHintText}>{t('watchlist.hintLike')}</Text>
         </View>
         <View style={styles.emptyHint}>
           <Text style={styles.emptyHintIcon}>👆</Text>
-          <Text style={styles.emptyHintText}>Super Like</Text>
+          <Text style={styles.emptyHintText}>{t('watchlist.hintSuperLike')}</Text>
         </View>
       </View>
     </View>
@@ -159,7 +161,7 @@ export default function WatchlistScreen() {
   const renderFooter = () => (
     <View style={styles.footer}>
       <Text style={styles.footerText}>
-        Pull down to refresh
+        {t('watchlist.pullToRefresh')}
       </Text>
     </View>
   );

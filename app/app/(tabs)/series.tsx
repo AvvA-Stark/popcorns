@@ -18,7 +18,8 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
 import Slider from '@react-native-community/slider';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie, TVSeries, Genre, Person, PROVIDER_IDS } from '../../lib/tmdb';
@@ -28,7 +29,7 @@ import SkeletonCard from '../../components/SkeletonCard';
 import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
-import SwipeTutorialOverlay from '../../components/SwipeTutorialOverlay';
+
 import { trackPass, trackLike, trackSuperLike, updateGenreNames } from '../../utils/stats';
 
 interface Filters {
@@ -44,8 +45,9 @@ interface Filters {
 }
 
 export default function SeriesScreen() {
+  const { t } = useTranslation();
   const { showToast } = useToast();
-  const { region, regionName } = useRegion();
+  const { region } = useRegion();
   const [series, setSeries] = useState<TVSeries[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -54,7 +56,6 @@ export default function SeriesScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [swipedCount, setSwipedCount] = useState(0);
   const [randomPage, setRandomPage] = useState(1);
-  const [showTutorial, setShowTutorial] = useState(false);
 
   // Filter state
   const [filters, setFilters] = useState<Filters>({
@@ -110,22 +111,6 @@ export default function SeriesScreen() {
     setRandomPage(newRandomPage);
     await loadSeries(1, newRandomPage);
   };
-
-  // Trigger tutorial every time this tab comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      console.log('📺 Series tab focused - triggering tutorial');
-      setShowTutorial(false); // Reset first
-      setTimeout(() => {
-        setShowTutorial(true); // Then trigger
-      }, 100);
-      
-      return () => {
-        // Cleanup when tab loses focus
-        setShowTutorial(false);
-      };
-    }, [])
-  );
 
   // Effects
   useEffect(() => {
@@ -207,7 +192,7 @@ export default function SeriesScreen() {
         
         // Apply region availability filter if enabled
         if (activeFilters.availableInRegion) {
-          console.log(`🔍 Fetching watch providers for ${seriesData.length} series in region: ${region} (${regionName})`);
+          console.log(`🔍 Fetching watch providers for ${seriesData.length} series in region: ${region} (${t('regions.' + region)})`);
           
           // Fetch watch providers for all series in parallel
           const seriesWithProviders = await Promise.all(
@@ -283,7 +268,7 @@ export default function SeriesScreen() {
       setCurrentPage(page);
       console.log(`✅ Loaded ${seriesData.length} TV series (page ${page})`);
     } catch (err) {
-      setError('Failed to load TV series');
+      setError(t('errors.loadingFailed'));
       console.error('Error loading TV series:', err);
     } finally {
       setLoading(false);
@@ -325,13 +310,13 @@ export default function SeriesScreen() {
     try {
       await addToWatchlist(show, 'normal', 'tv');
       showToast({ 
-        message: `Added "${show.name}" to watchlist`, 
+        message: t('discovery.addedToWatchlist', { title: show.name }), 
         type: 'success' 
       });
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
       showToast({ 
-        message: 'Failed to add to watchlist', 
+        message: t('discovery.failedToAddWatchlist'), 
         type: 'error' 
       });
     }
@@ -350,13 +335,13 @@ export default function SeriesScreen() {
     try {
       await addToWatchlist(show, 'super', 'tv');
       showToast({ 
-        message: `⭐ Super-liked "${show.name}"!`, 
+        message: t('discovery.superLiked', { title: show.name }), 
         type: 'success' 
       });
     } catch (error) {
       console.error('Failed to add to watchlist:', error);
       showToast({ 
-        message: 'Failed to add to watchlist', 
+        message: t('discovery.failedToAddWatchlist'), 
         type: 'error' 
       });
     }
@@ -500,12 +485,12 @@ export default function SeriesScreen() {
       <View style={styles.container}>
         <View style={styles.stickyHeader}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>📺 Series</Text>
+            <Text style={styles.title}>📺 {t('series.title')}</Text>
             <View style={styles.filterButton}>
               <Text style={styles.filterIcon}>⚙️</Text>
             </View>
           </View>
-          <Text style={styles.subtitle}>Loading TV series...</Text>
+          <Text style={styles.subtitle}>{t('series.loadingSeries')}</Text>
         </View>
         <View style={styles.contentArea}>
           <View style={styles.skeletonContainer}>
@@ -529,7 +514,7 @@ export default function SeriesScreen() {
       {/* Sticky header - always visible at top */}
       <View style={styles.stickyHeader}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>📺 Series</Text>
+          <Text style={styles.title}>📺 {t('series.title')}</Text>
           <TouchableOpacity onPress={openFilterModal} style={styles.filterButton}>
             <Text style={styles.filterIcon}>
               {hasActiveFilters() ? '🔍' : '⚙️'}
@@ -562,7 +547,10 @@ export default function SeriesScreen() {
                 onPress={() => removeFilter('yearFrom')}
               >
                 <Text style={styles.filterPillText}>
-                  Year: {filters.yearFrom || '—'} - {filters.yearTo || '—'}
+                  {t('discovery.filterYear', { 
+                    from: filters.yearFrom || t('discovery.yearFrom'), 
+                    to: filters.yearTo || t('discovery.yearTo') 
+                  })}
                 </Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
@@ -572,7 +560,7 @@ export default function SeriesScreen() {
                 style={styles.filterPill}
                 onPress={() => removeFilter('actorId')}
               >
-                <Text style={styles.filterPillText}>Actor: {filters.actorName}</Text>
+                <Text style={styles.filterPillText}>{t('series.filterActor', { default: 'Actor' })}: {filters.actorName}</Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
@@ -590,7 +578,7 @@ export default function SeriesScreen() {
                 style={styles.filterPill}
                 onPress={() => removeFilter('ratingGte')}
               >
-                <Text style={styles.filterPillText}>Rating ≥ {filters.ratingGte.toFixed(1)}</Text>
+                <Text style={styles.filterPillText}>{t('discovery.filterRating', { value: filters.ratingGte.toFixed(1) })}</Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
@@ -599,7 +587,7 @@ export default function SeriesScreen() {
                 style={styles.filterPill}
                 onPress={() => removeFilter('availableInRegion')}
               >
-                <Text style={styles.filterPillText}>Available in {regionName}</Text>
+                <Text style={styles.filterPillText}>{t('discovery.filterAvailability', { region: t('regions.' + region) })}</Text>
                 <Text style={styles.filterPillX}>✕</Text>
               </TouchableOpacity>
             )}
@@ -624,21 +612,21 @@ export default function SeriesScreen() {
         {loadingMore ? (
           <View style={styles.loadingMore}>
             <ActivityIndicator size="small" color={Colors.primary} />
-            <Text style={styles.loadingMoreText}>Loading more...</Text>
+            <Text style={styles.loadingMoreText}>{t('series.loadingMore')}</Text>
           </View>
         ) : (
           <>
             <View style={styles.actionHint}>
               <Text style={styles.actionIcon}>👈</Text>
-              <Text style={styles.actionText}>Dislike</Text>
+              <Text style={styles.actionText}>{t('series.actionHintDislike')}</Text>
             </View>
             <View style={styles.actionHint}>
               <Text style={styles.actionIcon}>👆</Text>
-              <Text style={styles.actionText}>Super Like</Text>
+              <Text style={styles.actionText}>{t('series.actionHintSuperLike')}</Text>
             </View>
             <View style={styles.actionHint}>
               <Text style={styles.actionIcon}>👉</Text>
-              <Text style={styles.actionText}>Like</Text>
+              <Text style={styles.actionText}>{t('series.actionHintLike')}</Text>
             </View>
           </>
         )}
@@ -654,7 +642,7 @@ export default function SeriesScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filter TV Series</Text>
+              <Text style={styles.modalTitle}>{t('series.filterSeries')}</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>
@@ -663,7 +651,7 @@ export default function SeriesScreen() {
             <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
               {/* Genres */}
               <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Genres</Text>
+                <Text style={styles.filterLabel}>{t('discovery.filterGenres')}</Text>
                 {loadingGenres ? (
                   <ActivityIndicator size="small" color={Colors.primary} />
                 ) : (
@@ -694,7 +682,10 @@ export default function SeriesScreen() {
               {/* Year Range */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>
-                  Year: {tempFilters.yearFrom || 1900} — {tempFilters.yearTo || new Date().getFullYear()}
+                  {t('discovery.filterYear', { 
+                    from: tempFilters.yearFrom || t('discovery.yearFrom'), 
+                    to: tempFilters.yearTo || t('discovery.yearTo') 
+                  })}
                 </Text>
                 <RangeSlider
                   minValue={1900}
@@ -706,7 +697,6 @@ export default function SeriesScreen() {
                     const currentYear = new Date().getFullYear();
                     setTempFilters((prev) => ({
                       ...prev,
-                      // Only set if not the full range
                       yearFrom: value === 1900 && (prev.yearTo === currentYear || !prev.yearTo) ? undefined : value,
                     }));
                   }}
@@ -714,7 +704,6 @@ export default function SeriesScreen() {
                     const currentYear = new Date().getFullYear();
                     setTempFilters((prev) => ({
                       ...prev,
-                      // Only set if not the full range
                       yearTo: value === currentYear && (prev.yearFrom === 1900 || !prev.yearFrom) ? undefined : value,
                     }));
                   }}
@@ -727,16 +716,16 @@ export default function SeriesScreen() {
               {/* Actor */}
               <View style={styles.filterSection}>
                 <View style={styles.actorHeader}>
-                  <Text style={styles.filterLabel}>Actor</Text>
+                  <Text style={styles.filterLabel}>{t('discovery.filterActor')}</Text>
                   {tempFilters.actorId && (
                     <TouchableOpacity onPress={clearActor}>
-                      <Text style={styles.clearButton}>Clear</Text>
+                      <Text style={styles.clearButton}>{t('discovery.filterClear')}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
                 <TextInput
                   style={styles.textInput}
-                  placeholder="Search actor name..."
+                  placeholder={t('discovery.filterSearchActor')}
                   placeholderTextColor={Colors.textSecondary}
                   value={actorSearchQuery}
                   onChangeText={setActorSearchQuery}
@@ -763,7 +752,7 @@ export default function SeriesScreen() {
 
               {/* Provider */}
               <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Streaming Provider</Text>
+                <Text style={styles.filterLabel}>{t('discovery.filterProvider')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {Object.entries(PROVIDER_IDS).map(([name, id]) => (
                     <TouchableOpacity
@@ -790,7 +779,7 @@ export default function SeriesScreen() {
               {/* Rating */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterLabel}>
-                  Minimum Rating: {tempFilters.ratingGte?.toFixed(1) || '0.0'}
+                  {t('discovery.filterRating', { value: tempFilters.ratingGte?.toFixed(1) || '0.0' })}
                 </Text>
                 <Slider
                   style={styles.slider}
@@ -812,7 +801,7 @@ export default function SeriesScreen() {
 
               {/* Available in Region */}
               <View style={styles.filterSection}>
-                <Text style={styles.filterLabel}>Availability</Text>
+                <Text style={styles.filterLabel}>{t('discovery.filterAvailability')}</Text>
                 <TouchableOpacity
                   style={[
                     styles.toggleOption,
@@ -831,7 +820,7 @@ export default function SeriesScreen() {
                       tempFilters.availableInRegion && styles.toggleTextSelected,
                     ]}
                   >
-                    Available in {regionName}
+                    {t('discovery.filterToggleAvailable', { region: t('regions.' + region) })}
                   </Text>
                   <View style={styles.toggleSwitch}>
                     <View
@@ -848,18 +837,15 @@ export default function SeriesScreen() {
             {/* Action buttons */}
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
-                <Text style={styles.clearAllButtonText}>Clear All</Text>
+                <Text style={styles.clearAllButtonText}>{t('discovery.clearAll')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-                <Text style={styles.applyButtonText}>Apply Filters</Text>
+                <Text style={styles.applyButtonText}>{t('discovery.applyFilters')}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-
-      {/* Tutorial Overlay - shows every time tab is focused */}
-      <SwipeTutorialOverlay trigger={showTutorial} />
     </View>
   );
 }

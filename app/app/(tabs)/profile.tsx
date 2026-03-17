@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Modal } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import { getStats, getAccountAge, getAccountCreatedDate, getTopGenres, initializeStats } from '../../utils/stats';
 import { getWatchlistStats } from '../../lib/watchlist';
@@ -18,8 +19,10 @@ import {
   Language, 
   Region 
 } from '../../utils/settings';
+import { changeLanguage } from '../../lib/i18n';
 
 export default function ProfileScreen() {
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({
     totalSwipes: 0,
     likes: 0,
@@ -109,6 +112,8 @@ export default function ProfileScreen() {
     try {
       await setLanguage(language);
       setSettingsState((prev) => ({ ...prev, language }));
+      // Change i18n language
+      await changeLanguage(language);
       setLanguageModalVisible(false);
       console.log(`✅ Language changed to: ${LANGUAGES[language].name}`);
     } catch (error) {
@@ -128,7 +133,7 @@ export default function ProfileScreen() {
   };
 
   const formatDate = (date: Date | null) => {
-    if (!date) return 'Unknown';
+    if (!date) return t('profile.unknownDate');
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -160,27 +165,27 @@ export default function ProfileScreen() {
             <Text style={styles.avatarText}>👤</Text>
           </View>
           <Text style={styles.username}>Movie Enthusiast</Text>
-          <Text style={styles.bio}>Swipe • Discover • Watch</Text>
+          <Text style={styles.bio}>{t('profile.headerBio')}</Text>
         </View>
 
         {/* Main Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{stats.totalSwipes}</Text>
-            <Text style={styles.statLabel}>Movies</Text>
-            <Text style={styles.statSubLabel}>Discovered</Text>
+            <Text style={styles.statLabel}>{t('profile.totalSwipes')}</Text>
+            <Text style={styles.statSubLabel}></Text>
           </View>
 
           <View style={styles.statCard}>
             <Text style={[styles.statNumber, { color: Colors.like }]}>{stats.likes}</Text>
-            <Text style={styles.statLabel}>Likes</Text>
-            <Text style={styles.statSubLabel}>{getLikePercentage()}% match</Text>
+            <Text style={styles.statLabel}>{t('profile.likes')}</Text>
+            <Text style={styles.statSubLabel}>{getLikePercentage()}% {t('profile.matchPercentage', { percent: getLikePercentage() })}</Text>
           </View>
 
           <View style={styles.statCard}>
             <Text style={[styles.statNumber, { color: Colors.dislike }]}>{stats.passes}</Text>
-            <Text style={styles.statLabel}>Passes</Text>
-            <Text style={styles.statSubLabel}>Not your vibe</Text>
+            <Text style={styles.statLabel}>{t('profile.passes')}</Text>
+            <Text style={styles.statSubLabel}>{t('profile.notYourVibe')}</Text>
           </View>
         </View>
 
@@ -192,7 +197,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.secondaryStatContent}>
               <Text style={styles.secondaryStatNumber}>{stats.watchlistCount}</Text>
-              <Text style={styles.secondaryStatLabel}>Watchlist Items</Text>
+              <Text style={styles.secondaryStatLabel}>{t('profile.watchlistItems')}</Text>
             </View>
           </View>
 
@@ -202,7 +207,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.secondaryStatContent}>
               <Text style={styles.secondaryStatNumber}>{stats.superLikes}</Text>
-              <Text style={styles.secondaryStatLabel}>Super Likes</Text>
+              <Text style={styles.secondaryStatLabel}>{t('profile.superLikes')}</Text>
             </View>
           </View>
 
@@ -212,7 +217,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.secondaryStatContent}>
               <Text style={styles.secondaryStatNumber}>{stats.accountAge}</Text>
-              <Text style={styles.secondaryStatLabel}>Days Active</Text>
+              <Text style={styles.secondaryStatLabel}>{t('profile.daysActive')}</Text>
             </View>
           </View>
         </View>
@@ -220,16 +225,16 @@ export default function ProfileScreen() {
         {/* Top Genres */}
         {stats.topGenres.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎭 Favorite Genres</Text>
+            <Text style={styles.sectionTitle}>🎭 {t('profile.favoriteGenres')}</Text>
             <View style={styles.genresList}>
               {stats.topGenres.map((genre, index) => (
                 <View key={index} style={styles.genreCard}>
                   <View style={styles.genreRank}>
-                    <Text style={styles.genreRankText}>#{index + 1}</Text>
+                    <Text style={styles.genreRankText}>{t('profile.genreRank', { rank: index + 1 })}</Text>
                   </View>
                   <View style={styles.genreContent}>
                     <Text style={styles.genreName}>{genre.name}</Text>
-                    <Text style={styles.genreCount}>{genre.count} likes</Text>
+                    <Text style={styles.genreCount}>{t('profile.genreLikes', { count: genre.count })}</Text>
                   </View>
                   <View style={styles.genreBar}>
                     <View
@@ -249,7 +254,7 @@ export default function ProfileScreen() {
 
         {/* Settings Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ Settings</Text>
+          <Text style={styles.sectionTitle}>⚙️ {t('profile.settings')}</Text>
           
           {/* Language Selector */}
           <TouchableOpacity
@@ -260,7 +265,7 @@ export default function ProfileScreen() {
               <Text style={styles.iconText}>🌐</Text>
             </View>
             <View style={styles.settingContent}>
-              <Text style={styles.settingLabel}>Language</Text>
+              <Text style={styles.settingLabel}>{t('profile.language')}</Text>
               <Text style={styles.settingValue}>
                 {LANGUAGES[settings.language].flag} {LANGUAGES[settings.language].name}
               </Text>
@@ -277,9 +282,9 @@ export default function ProfileScreen() {
               <Text style={styles.iconText}>📍</Text>
             </View>
             <View style={styles.settingContent}>
-              <Text style={styles.settingLabel}>Region</Text>
+              <Text style={styles.settingLabel}>{t('profile.region')}</Text>
               <Text style={styles.settingValue}>
-                {REGIONS[settings.region].flag} {REGIONS[settings.region].name}
+                {REGIONS[settings.region].flag} {t('regions.' + settings.region)}
               </Text>
             </View>
             <Text style={styles.settingChevron}>›</Text>
@@ -289,7 +294,7 @@ export default function ProfileScreen() {
         {/* Account Info */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Member since {formatDate(stats.accountCreated)}
+            {t('profile.memberSince', { date: formatDate(stats.accountCreated) })}
           </Text>
         </View>
 
@@ -297,9 +302,9 @@ export default function ProfileScreen() {
         {stats.totalSwipes === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateIcon}>🎬</Text>
-            <Text style={styles.emptyStateTitle}>Start Discovering!</Text>
+            <Text style={styles.emptyStateTitle}>{t('profile.emptyStateTitle')}</Text>
             <Text style={styles.emptyStateText}>
-              Swipe through movies to build your profile and see your stats here
+              {t('profile.emptyStateText')}
             </Text>
           </View>
         )}
@@ -315,7 +320,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Language</Text>
+              <Text style={styles.modalTitle}>{t('profile.selectLanguage')}</Text>
               <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
                 <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>
@@ -359,7 +364,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Region</Text>
+              <Text style={styles.modalTitle}>{t('profile.selectRegion')}</Text>
               <TouchableOpacity onPress={() => setRegionModalVisible(false)}>
                 <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>
@@ -381,7 +386,7 @@ export default function ProfileScreen() {
                       settings.region === code && styles.optionTextSelected,
                     ]}
                   >
-                    {region.name}
+                    {t('regions.' + code)}
                   </Text>
                   {settings.region === code && (
                     <Text style={styles.optionCheck}>✓</Text>

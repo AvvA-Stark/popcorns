@@ -16,6 +16,7 @@ import {
   ListRenderItem,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '../../constants/Colors';
 import { tmdb, Movie } from '../../lib/tmdb';
@@ -26,6 +27,7 @@ import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/wa
 import { useToast } from '../../lib/toast';
 
 export default function SearchScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { showToast } = useToast();
   const [query, setQuery] = useState('');
@@ -92,21 +94,21 @@ export default function SearchScreen() {
         await removeFromWatchlist(movie.id, 'movie');
         setWatchlistStatus(prev => ({ ...prev, [movie.id]: false }));
         showToast({
-          message: `Removed "${movie.title}" from watchlist`,
+          message: t('watchlist.removedMessage', { title: movie.title }),
           type: 'info',
         });
       } else {
         await addToWatchlist(movie, 'normal', 'movie');
         setWatchlistStatus(prev => ({ ...prev, [movie.id]: true }));
         showToast({
-          message: `Added "${movie.title}" to watchlist`,
+          message: t('discovery.addedToWatchlist', { title: movie.title }),
           type: 'success',
         });
       }
     } catch (error) {
       console.error('Error toggling watchlist:', error);
       showToast({
-        message: 'Failed to update watchlist',
+        message: t('discovery.failedToAddWatchlist'),
         type: 'error',
       });
     }
@@ -171,7 +173,7 @@ export default function SearchScreen() {
     if (loading) {
       return (
         <View>
-          <Text style={styles.resultsCount}>Searching...</Text>
+          <Text style={styles.resultsCount}>{t('common.loading')}</Text>
           {[...Array(5)].map((_, index) => (
             <SkeletonSearchCard key={index} />
           ))}
@@ -183,12 +185,12 @@ export default function SearchScreen() {
       return (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>🔎</Text>
-          <Text style={styles.emptyText}>Discover your next favorite movie</Text>
+          <Text style={styles.emptyText}>{t('discovery.title')}</Text>
           <Text style={styles.emptySubtext}>
-            Search by title, actor, or director
+            {t('watchlist.emptyText')}
           </Text>
           <View style={styles.searchHintContainer}>
-            <Text style={styles.searchHint}>💡 Try "Inception" or "Tom Hanks"</Text>
+            <Text style={styles.searchHint}>💡 {t('movieDetail.notFound')}</Text>
           </View>
         </View>
       );
@@ -198,12 +200,12 @@ export default function SearchScreen() {
       return (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>😕</Text>
-          <Text style={styles.emptyText}>No movies found</Text>
+          <Text style={styles.emptyText}>{t('discovery.noResults')}</Text>
           <Text style={styles.emptySubtext}>
-            We couldn't find any movies matching "{query}"
+            {t('watchlist.emptySubtext', { default: `We couldn't find any movies matching "${query}"` })}
           </Text>
           <View style={styles.searchHintContainer}>
-            <Text style={styles.searchHint}>💡 Check spelling or try a different title</Text>
+            <Text style={styles.searchHint}>💡 {t('discovery.noResultsSubtext')}</Text>
           </View>
         </View>
       );
@@ -212,7 +214,7 @@ export default function SearchScreen() {
     if (results.length > 0) {
       return (
         <Text style={styles.resultsCount}>
-          {results.length} {results.length === 1 ? 'result' : 'results'}
+          {t('watchlist.stats', { count: results.length })}
         </Text>
       );
     }
@@ -228,7 +230,7 @@ export default function SearchScreen() {
           <FontAwesome name="search" size={18} color={Colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search for any movie..."
+            placeholder={t('tabs.search')}
             placeholderTextColor={Colors.textSecondary}
             value={query}
             onChangeText={setQuery}

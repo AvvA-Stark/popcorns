@@ -150,16 +150,4 @@ function emitRegionChange(region: string | null): void {
   }
 }
 
-// Modify setRegionOverride to emit after updating
-export async function setRegionOverride(code: string): Promise<void> {
-  try {
-    const upperCode = code.toUpperCase();
-    await AsyncStorage.setItem(REGION_OVERRIDE_KEY, upperCode);
-    cachedRegion = upperCode; // Update cache immediately
-    console.log(`[Region Detection] Manual override set: ${upperCode}`);
-    emitRegionChange(cachedRegion);
-  } catch (error) {
-    console.error('[Region Detection] Failed to save region override:', error);
-    throw error;
-  }
-}
+

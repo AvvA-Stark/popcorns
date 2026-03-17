@@ -4,8 +4,9 @@
  * Shows every time the tab is focused
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Modal } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,8 +28,9 @@ interface SwipeTutorialOverlayProps {
 }
 
 export default function SwipeTutorialOverlay({ onComplete, trigger = false }: SwipeTutorialOverlayProps) {
-  const [visible, setVisible] = useState(false);
+  const { t } = useTranslation();
   const overlayOpacity = useSharedValue(0);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Card positions and rotations
   const card1TranslateX = useSharedValue(0);
@@ -51,30 +53,52 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   const likeOpacity = useSharedValue(0);
   const superLikeOpacity = useSharedValue(0);
 
+  // Cleanup function for animation timeout
+  const clearAnimationTimeout = () => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = null;
+    }
+  };
+
   useEffect(() => {
     console.log('🎬 SwipeTutorialOverlay: useEffect triggered with trigger =', trigger);
-    console.log('🎬 SwipeTutorialOverlay: visible state =', visible);
     
     if (trigger) {
       console.log('🎬 SwipeTutorialOverlay: TRIGGER IS TRUE - Starting tutorial animation...');
-      setVisible(true);
-      console.log('🎬 SwipeTutorialOverlay: visible state set to TRUE');
+      
+      // Clear any pending animation timeout
+      clearAnimationTimeout();
       
       // Reset all values before starting
       resetAnimation();
       
-      // Small delay to ensure render
-      setTimeout(() => {
+      // Small delay to ensure render, then start animation
+      animationTimeoutRef.current = setTimeout(() => {
         console.log('🎬 SwipeTutorialOverlay: Starting animation after delay');
         startAnimation();
-      }, 100); // Increased delay
+      }, 50);
+    } else {
+      // If trigger becomes false, immediately stop and reset
+      console.log('🎬 SwipeTutorialOverlay: Trigger became false - hiding overlay');
+      clearAnimationTimeout();
+      // Immediately hide by setting opacity to 0
+      overlayOpacity.value = 0;
     }
   }, [trigger]);
+
+  // Also cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearAnimationTimeout();
+    };
+  }, []);
 
   const resetAnimation = () => {
     console.log('🔄 SwipeTutorialOverlay: Resetting animation values');
     // Reset all animated values to initial state
-    overlayOpacity.value = 0;
+    // Start with tiny visible opacity so Modal renders properly
+    overlayOpacity.value = 0.01;
     card1TranslateX.value = 0;
     card1TranslateY.value = SCREEN_HEIGHT;
     card1Rotate.value = 0;
@@ -154,12 +178,13 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   };
 
   const handleComplete = () => {
+    clearAnimationTimeout();
     console.log('✅ Tutorial animation completed');
-    setVisible(false);
     onComplete?.();
   };
 
   const handleDismiss = () => {
+    clearAnimationTimeout();
     console.log('👆 SwipeTutorialOverlay: User dismissed tutorial');
     overlayOpacity.value = withTiming(0, { duration: 200 }, (finished) => {
       if (finished) {
@@ -217,10 +242,10 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
     opacity: superLikeOpacity.value,
   }));
 
-  console.log('🎬 SwipeTutorialOverlay: RENDER CALLED - visible =', visible);
+  console.log('🎬 SwipeTutorialOverlay: RENDER CALLED - trigger =', trigger);
   
-  if (!visible) {
-    console.log('🎬 SwipeTutorialOverlay: Not rendering (visible = false)');
+  if (!trigger) {
+    console.log('🎬 SwipeTutorialOverlay: Not rendering (trigger = false)');
     return null;
   }
 
@@ -229,7 +254,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
   // Using Modal to ensure it's truly on top of everything
   return (
     <Modal
-      visible={visible}
+      visible={trigger}
       transparent={true}
       animationType="none"
       statusBarTranslucent={true}
@@ -241,7 +266,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
       >
         <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
           <View style={styles.content}>
-            <Text style={styles.title}>How to Swipe</Text>
+            <Text style={styles.title}>{t('tutorial.title')}</Text>
 
             {/* Card Stack */}
             <View style={styles.cardContainer}>
@@ -252,7 +277,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
                   <Text style={styles.cardTitle}>Movie 3</Text>
                 </View>
                 <Animated.View style={[styles.label, styles.superLikeLabel, superLikeAnimatedStyle]}>
-                  <Text style={styles.labelText}>SUPER LIKE</Text>
+                  <Text style={styles.labelText}>{t('tutorial.superLike')}</Text>
                 </Animated.View>
               </Animated.View>
 
@@ -263,7 +288,7 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
                   <Text style={styles.cardTitle}>Movie 2</Text>
                 </View>
                 <Animated.View style={[styles.label, styles.likeLabel, likeAnimatedStyle]}>
-                  <Text style={styles.labelText}>LIKE</Text>
+                  <Text style={styles.labelText}>{t('tutorial.like')}</Text>
                 </Animated.View>
               </Animated.View>
 
@@ -274,12 +299,12 @@ export default function SwipeTutorialOverlay({ onComplete, trigger = false }: Sw
                   <Text style={styles.cardTitle}>Movie 1</Text>
                 </View>
                 <Animated.View style={[styles.label, styles.nopeLabel, nopeAnimatedStyle]}>
-                  <Text style={styles.labelText}>NOPE</Text>
+                  <Text style={styles.labelText}>{t('tutorial.nope')}</Text>
                 </Animated.View>
               </Animated.View>
             </View>
 
-            <Text style={styles.hint}>Tap anywhere to skip</Text>
+            <Text style={styles.hint}>{t('tutorial.hint')}</Text>
           </View>
         </Animated.View>
       </TouchableOpacity>

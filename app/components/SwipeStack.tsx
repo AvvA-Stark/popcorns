@@ -42,6 +42,7 @@ export default function SwipeStack({
   onSwipeLeft,
   onSwipeRight,
   onSwipeUp,
+  shakeOnMount,
 }: SwipeStackProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);

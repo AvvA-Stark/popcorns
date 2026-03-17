@@ -19,6 +19,7 @@ import {
   Platform,
 } from 'react-native';
 
+import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Slider from '@react-native-community/slider';
 import { Colors } from '../../constants/Colors';

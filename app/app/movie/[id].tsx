@@ -509,7 +509,7 @@ export default function MovieDetailScreen() {
           </TouchableOpacity>
 
           {/* User Reviews */}
-          <View style={styles.section}>
+          <View style={[styles.section, styles.reviewsSection]}>
             <View style={styles.reviewsHeader}>
               <Text style={styles.sectionTitle}>{t('movieDetail.userReviews')}</Text>
               <TouchableOpacity
@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
   },
   watchlistButtonActive: {
     backgroundColor: Colors.success,
@@ -989,6 +989,9 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   // User Reviews styles
+  reviewsSection: {
+    marginTop: 40,
+  },
   reviewsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

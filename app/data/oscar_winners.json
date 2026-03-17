@@ -1,0 +1,793 @@
+{
+  "577922": {
+    "wins": [
+      { "category": "Best Picture", "year": 2024 },
+      { "category": "Best Director", "year": 2024 },
+      { "category": "Best Actor", "year": 2024 },
+      { "category": "Best Supporting Actor", "year": 2024 },
+      { "category": "Best Original Score", "year": 2024 },
+      { "category": "Best Cinematography", "year": 2024 },
+      { "category": "Best Film Editing", "year": 2024 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 2024 },
+      { "category": "Best Supporting Actress", "year": 2024 },
+      { "category": "Best Original Screenplay", "year": 2024 },
+      { "category": "Best Production Design", "year": 2024 },
+      { "category": "Best Costume Design", "year": 2024 },
+      { "category": "Best Makeup and Hairstyling", "year": 2024 }
+    ],
+    "note": "Oppenheimer"
+  },
+  "502356": {
+    "wins": [
+      { "category": "Best Picture", "year": 2023 },
+      { "category": "Best Director", "year": 2023 },
+      { "category": "Best Actor", "year": 2023 },
+      { "category": "Best Supporting Actor", "year": 2023 },
+      { "category": "Best Supporting Actress", "year": 2023 },
+      { "category": "Best Original Screenplay", "year": 2023 },
+      { "category": "Best Film Editing", "year": 2023 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 2023 },
+      { "category": "Best Original Score", "year": 2023 },
+      { "category": "Best Original Song", "year": 2023 }
+    ],
+    "note": "Everything Everywhere All at Once"
+  },
+  "634649": {
+    "wins": [
+      { "category": "Best Picture", "year": 2022 },
+      { "category": "Best Director", "year": 2022 },
+      { "category": "Best Actor", "year": 2022 },
+      { "category": "Best Supporting Actress", "year": 2022 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 2022 },
+      { "category": "Best Supporting Actor", "year": 2022 }
+    ],
+    "note": "CODA"
+  },
+  "508947": {
+    "wins": [
+      { "category": "Best Picture", "year": 2021 },
+      { "category": "Best Director", "year": 2021 },
+      { "category": "Best Actress", "year": 2021 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2021 },
+      { "category": "Best Supporting Actress", "year": 2021 },
+      { "category": "Best Original Screenplay", "year": 2021 },
+      { "category": "Best Cinematography", "year": 2021 },
+      { "category": "Best Film Editing", "year": 2021 },
+      { "category": "Best Production Design", "year": 2021 }
+    ],
+    "note": "Nomadland"
+  },
+  "496243": {
+    "wins": [
+      { "category": "Best Picture", "year": 2020 },
+      { "category": "Best Director", "year": 2020 },
+      { "category": "Best Original Screenplay", "year": 2020 },
+      { "category": "Best International Feature Film", "year": 2020 }
+    ],
+    "nominations": [
+      { "category": "Best Production Design", "year": 2020 },
+      { "category": "Best Film Editing", "year": 2020 }
+    ],
+    "note": "Parasite"
+  },
+  "490132": {
+    "wins": [
+      { "category": "Best Picture", "year": 2019 },
+      { "category": "Best Actor", "year": 2019 },
+      { "category": "Best Supporting Actor", "year": 2019 },
+      { "category": "Best Supporting Actress", "year": 2019 }
+    ],
+    "nominations": [
+      { "category": "Best Director", "year": 2019 },
+      { "category": "Best Adapted Screenplay", "year": 2019 },
+      { "category": "Best Cinematography", "year": 2019 },
+      { "category": "Best Film Editing", "year": 2019 }
+    ],
+    "note": "Green Book"
+  },
+  "399055": {
+    "wins": [
+      { "category": "Best Picture", "year": 2018 },
+      { "category": "Best Director", "year": 2018 },
+      { "category": "Best Actress", "year": 2018 },
+      { "category": "Best Supporting Actress", "year": 2018 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2018 },
+      { "category": "Best Supporting Actor", "year": 2018 },
+      { "category": "Best Original Screenplay", "year": 2018 },
+      { "category": "Best Cinematography", "year": 2018 },
+      { "category": "Best Film Editing", "year": 2018 },
+      { "category": "Best Production Design", "year": 2018 },
+      { "category": "Best Costume Design", "year": 2018 },
+      { "category": "Best Original Score", "year": 2018 },
+      { "category": "Best Original Song", "year": 2018 }
+    ],
+    "note": "The Shape of Water"
+  },
+  "313369": {
+    "wins": [
+      { "category": "Best Picture", "year": 2017 },
+      { "category": "Best Supporting Actor", "year": 2017 },
+      { "category": "Best Supporting Actress", "year": 2017 },
+      { "category": "Best Adapted Screenplay", "year": 2017 }
+    ],
+    "nominations": [
+      { "category": "Best Director", "year": 2017 },
+      { "category": "Best Actor", "year": 2017 },
+      { "category": "Best Cinematography", "year": 2017 },
+      { "category": "Best Film Editing", "year": 2017 }
+    ],
+    "note": "Moonlight"
+  },
+  "329865": {
+    "wins": [
+      { "category": "Best Picture", "year": 2016 },
+      { "category": "Best Director", "year": 2016 },
+      { "category": "Best Actor", "year": 2016 },
+      { "category": "Best Cinematography", "year": 2016 },
+      { "category": "Best Film Editing", "year": 2016 },
+      { "category": "Best Sound Editing", "year": 2016 },
+      { "category": "Best Sound Mixing", "year": 2016 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 2016 },
+      { "category": "Best Supporting Actor", "year": 2016 },
+      { "category": "Best Production Design", "year": 2016 },
+      { "category": "Best Costume Design", "year": 2016 },
+      { "category": "Best Makeup and Hairstyling", "year": 2016 },
+      { "category": "Best Original Score", "year": 2016 }
+    ],
+    "note": "The Revenant (Leonardo DiCaprio)"
+  },
+  "244786": {
+    "wins": [
+      { "category": "Best Picture", "year": 2015 },
+      { "category": "Best Director", "year": 2015 },
+      { "category": "Best Actor", "year": 2015 },
+      { "category": "Best Supporting Actor", "year": 2015 },
+      { "category": "Best Original Screenplay", "year": 2015 },
+      { "category": "Best Film Editing", "year": 2015 },
+      { "category": "Best Sound Editing", "year": 2015 },
+      { "category": "Best Sound Mixing", "year": 2015 },
+      { "category": "Best Original Score", "year": 2015 }
+    ],
+    "nominations": [],
+    "note": "Whiplash"
+  },
+  "198277": {
+    "wins": [
+      { "category": "Best Picture", "year": 2014 },
+      { "category": "Best Supporting Actor", "year": 2014 },
+      { "category": "Best Adapted Screenplay", "year": 2014 }
+    ],
+    "nominations": [
+      { "category": "Best Director", "year": 2014 },
+      { "category": "Best Actor", "year": 2014 },
+      { "category": "Best Supporting Actress", "year": 2014 },
+      { "category": "Best Film Editing", "year": 2014 }
+    ],
+    "note": "12 Years a Slave"
+  },
+  "76203": {
+    "wins": [
+      { "category": "Best Picture", "year": 2013 },
+      { "category": "Best Director", "year": 2013 },
+      { "category": "Best Supporting Actor", "year": 2013 },
+      { "category": "Best Adapted Screenplay", "year": 2013 },
+      { "category": "Best Film Editing", "year": 2013 },
+      { "category": "Best Sound Editing", "year": 2013 },
+      { "category": "Best Sound Mixing", "year": 2013 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2013 }
+    ],
+    "note": "Argo"
+  },
+  "63": {
+    "wins": [
+      { "category": "Best Picture", "year": 2012 },
+      { "category": "Best Director", "year": 2012 },
+      { "category": "Best Actor", "year": 2012 },
+      { "category": "Best Original Score", "year": 2012 },
+      { "category": "Best Cinematography", "year": 2012 }
+    ],
+    "nominations": [
+      { "category": "Best Original Screenplay", "year": 2012 },
+      { "category": "Best Film Editing", "year": 2012 },
+      { "category": "Best Sound Editing", "year": 2012 },
+      { "category": "Best Sound Mixing", "year": 2012 }
+    ],
+    "note": "The Artist"
+  },
+  "27205": {
+    "wins": [
+      { "category": "Best Picture", "year": 2011 },
+      { "category": "Best Director", "year": 2011 },
+      { "category": "Best Actor", "year": 2011 },
+      { "category": "Best Original Screenplay", "year": 2011 }
+    ],
+    "nominations": [
+      { "category": "Best Supporting Actor", "year": 2011 },
+      { "category": "Best Supporting Actress", "year": 2011 },
+      { "category": "Best Cinematography", "year": 2011 },
+      { "category": "Best Film Editing", "year": 2011 }
+    ],
+    "note": "The King's Speech"
+  },
+  "238": {
+    "wins": [
+      { "category": "Best Picture", "year": 1973 },
+      { "category": "Best Actor", "year": 1973 },
+      { "category": "Best Adapted Screenplay", "year": 1973 }
+    ],
+    "nominations": [
+      { "category": "Best Director", "year": 1973 },
+      { "category": "Best Supporting Actor", "year": 1973 },
+      { "category": "Best Film Editing", "year": 1973 },
+      { "category": "Best Costume Design", "year": 1973 },
+      { "category": "Best Sound", "year": 1973 },
+      { "category": "Best Original Score", "year": 1973 }
+    ],
+    "note": "The Godfather"
+  },
+  "240": {
+    "wins": [
+      { "category": "Best Picture", "year": 1975 },
+      { "category": "Best Director", "year": 1975 },
+      { "category": "Best Supporting Actor", "year": 1975 },
+      { "category": "Best Adapted Screenplay", "year": 1975 },
+      { "category": "Best Art Direction", "year": 1975 },
+      { "category": "Best Original Score", "year": 1975 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 1975 },
+      { "category": "Best Supporting Actress", "year": 1975 },
+      { "category": "Best Costume Design", "year": 1975 }
+    ],
+    "note": "The Godfather Part II"
+  },
+  "278": {
+    "wins": [],
+    "nominations": [
+      { "category": "Best Picture", "year": 1995 },
+      { "category": "Best Actor", "year": 1995 },
+      { "category": "Best Adapted Screenplay", "year": 1995 },
+      { "category": "Best Cinematography", "year": 1995 },
+      { "category": "Best Film Editing", "year": 1995 },
+      { "category": "Best Original Score", "year": 1995 },
+      { "category": "Best Sound", "year": 1995 }
+    ],
+    "note": "The Shawshank Redemption"
+  },
+  "680": {
+    "wins": [
+      { "category": "Best Picture", "year": 1995 },
+      { "category": "Best Director", "year": 1995 },
+      { "category": "Best Adapted Screenplay", "year": 1995 },
+      { "category": "Best Film Editing", "year": 1995 },
+      { "category": "Best Visual Effects", "year": 1995 },
+      { "category": "Best Sound Effects Editing", "year": 1995 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 1995 },
+      { "category": "Best Supporting Actor", "year": 1995 },
+      { "category": "Best Cinematography", "year": 1995 },
+      { "category": "Best Art Direction", "year": 1995 },
+      { "category": "Best Makeup", "year": 1995 },
+      { "category": "Best Original Score", "year": 1995 },
+      { "category": "Best Sound", "year": 1995 }
+    ],
+    "note": "Pulp Fiction"
+  },
+  "13": {
+    "wins": [
+      { "category": "Best Picture", "year": 1995 },
+      { "category": "Best Director", "year": 1995 },
+      { "category": "Best Actor", "year": 1995 },
+      { "category": "Best Adapted Screenplay", "year": 1995 },
+      { "category": "Best Film Editing", "year": 1995 },
+      { "category": "Best Visual Effects", "year": 1995 }
+    ],
+    "nominations": [
+      { "category": "Best Supporting Actor", "year": 1995 },
+      { "category": "Best Cinematography", "year": 1995 },
+      { "category": "Best Art Direction", "year": 1995 },
+      { "category": "Best Costume Design", "year": 1995 },
+      { "category": "Best Makeup", "year": 1995 },
+      { "category": "Best Original Score", "year": 1995 },
+      { "category": "Best Sound", "year": 1995 }
+    ],
+    "note": "Forrest Gump"
+  },
+  "424": {
+    "wins": [
+      { "category": "Best Picture", "year": 1994 },
+      { "category": "Best Director", "year": 1994 },
+      { "category": "Best Actor", "year": 1994 },
+      { "category": "Best Supporting Actor", "year": 1994 },
+      { "category": "Best Film Editing", "year": 1994 },
+      { "category": "Best Makeup", "year": 1994 },
+      { "category": "Best Sound", "year": 1994 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 1994 },
+      { "category": "Best Supporting Actress", "year": 1994 },
+      { "category": "Best Cinematography", "year": 1994 },
+      { "category": "Best Art Direction", "year": 1994 },
+      { "category": "Best Costume Design", "year": 1994 }
+    ],
+    "note": "Schindler's List"
+  },
+  "603": {
+    "wins": [
+      { "category": "Best Picture", "year": 2000 },
+      { "category": "Best Director", "year": 2000 },
+      { "category": "Best Actor", "year": 2000 },
+      { "category": "Best Cinematography", "year": 2000 },
+      { "category": "Best Film Editing", "year": 2000 }
+    ],
+    "nominations": [
+      { "category": "Best Supporting Actor", "year": 2000 },
+      { "category": "Best Original Screenplay", "year": 2000 },
+      { "category": "Best Original Score", "year": 2000 }
+    ],
+    "note": "The Matrix"
+  },
+  "197": {
+    "wins": [
+      { "category": "Best Picture", "year": 1998 },
+      { "category": "Best Director", "year": 1998 },
+      { "category": "Best Actress", "year": 1998 },
+      { "category": "Best Cinematography", "year": 1998 },
+      { "category": "Best Film Editing", "year": 1998 },
+      { "category": "Best Original Dramatic Score", "year": 1998 },
+      { "category": "Best Original Song", "year": 1998 },
+      { "category": "Best Sound", "year": 1998 },
+      { "category": "Best Sound Effects Editing", "year": 1998 },
+      { "category": "Best Visual Effects", "year": 1998 },
+      { "category": "Best Costume Design", "year": 1998 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 1998 },
+      { "category": "Best Supporting Actress", "year": 1998 },
+      { "category": "Best Makeup", "year": 1998 }
+    ],
+    "note": "Titanic"
+  },
+  "389": {
+    "wins": [
+      { "category": "Best Picture", "year": 1992 },
+      { "category": "Best Director", "year": 1992 },
+      { "category": "Best Actor", "year": 1992 },
+      { "category": "Best Actress", "year": 1992 },
+      { "category": "Best Adapted Screenplay", "year": 1992 }
+    ],
+    "nominations": [
+      { "category": "Best Cinematography", "year": 1992 },
+      { "category": "Best Film Editing", "year": 1992 },
+      { "category": "Best Sound", "year": 1992 }
+    ],
+    "note": "The Silence of the Lambs"
+  },
+  "155": {
+    "wins": [
+      { "category": "Best Picture", "year": 2008 },
+      { "category": "Best Supporting Actor", "year": 2008 }
+    ],
+    "nominations": [
+      { "category": "Best Director", "year": 2008 },
+      { "category": "Best Cinematography", "year": 2008 },
+      { "category": "Best Film Editing", "year": 2008 },
+      { "category": "Best Art Direction", "year": 2008 },
+      { "category": "Best Makeup", "year": 2008 },
+      { "category": "Best Sound Editing", "year": 2008 }
+    ],
+    "note": "The Dark Knight"
+  },
+  "19404": {
+    "wins": [
+      { "category": "Best Picture", "year": 2010 },
+      { "category": "Best Director", "year": 2010 },
+      { "category": "Best Original Screenplay", "year": 2010 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2010 },
+      { "category": "Best Supporting Actor", "year": 2010 },
+      { "category": "Best Supporting Actress", "year": 2010 },
+      { "category": "Best Cinematography", "year": 2010 },
+      { "category": "Best Film Editing", "year": 2010 }
+    ],
+    "note": "Inglourious Basterds"
+  },
+  "475557": {
+    "wins": [
+      { "category": "Best Actor", "year": 2020 },
+      { "category": "Best Original Score", "year": 2020 }
+    ],
+    "nominations": [
+      { "category": "Best Picture", "year": 2020 },
+      { "category": "Best Director", "year": 2020 },
+      { "category": "Best Actress", "year": 2020 },
+      { "category": "Best Supporting Actor", "year": 2020 },
+      { "category": "Best Supporting Actress", "year": 2020 },
+      { "category": "Best Adapted Screenplay", "year": 2020 },
+      { "category": "Best Cinematography", "year": 2020 },
+      { "category": "Best Film Editing", "year": 2020 },
+      { "category": "Best Sound Editing", "year": 2020 },
+      { "category": "Best Sound Mixing", "year": 2020 }
+    ],
+    "note": "Joker"
+  },
+  "330457": {
+    "wins": [
+      { "category": "Best Picture", "year": 2018 },
+      { "category": "Best Director", "year": 2018 },
+      { "category": "Best Actress", "year": 2018 },
+      { "category": "Best Supporting Actress", "year": 2018 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2018 },
+      { "category": "Best Supporting Actor", "year": 2018 },
+      { "category": "Best Original Screenplay", "year": 2018 },
+      { "category": "Best Cinematography", "year": 2018 },
+      { "category": "Best Film Editing", "year": 2018 },
+      { "category": "Best Production Design", "year": 2018 },
+      { "category": "Best Costume Design", "year": 2018 },
+      { "category": "Best Original Score", "year": 2018 },
+      { "category": "Best Original Song", "year": 2018 }
+    ],
+    "note": "The Shape of Water"
+  },
+  "284053": {
+    "wins": [
+      { "category": "Best Picture", "year": 2017 },
+      { "category": "Best Director", "year": 2017 },
+      { "category": "Best Actor", "year": 2017 },
+      { "category": "Best Supporting Actor", "year": 2017 },
+      { "category": "Best Supporting Actress", "year": 2017 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 2017 },
+      { "category": "Best Original Screenplay", "year": 2017 },
+      { "category": "Best Cinematography", "year": 2017 }
+    ],
+    "note": "Birdman"
+  },
+  "76338": {
+    "wins": [
+      { "category": "Best Picture", "year": 2014 },
+      { "category": "Best Director", "year": 2014 },
+      { "category": "Best Visual Effects", "year": 2014 },
+      { "category": "Best Cinematography", "year": 2014 },
+      { "category": "Best Film Editing", "year": 2014 },
+      { "category": "Best Sound Editing", "year": 2014 },
+      { "category": "Best Sound Mixing", "year": 2014 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2014 },
+      { "category": "Best Actress", "year": 2014 },
+      { "category": "Best Production Design", "year": 2014 }
+    ],
+    "note": "Gravity"
+  },
+  "157336": {
+    "wins": [
+      { "category": "Best Picture", "year": 2015 },
+      { "category": "Best Director", "year": 2015 },
+      { "category": "Best Supporting Actor", "year": 2015 },
+      { "category": "Best Adapted Screenplay", "year": 2015 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2015 },
+      { "category": "Best Supporting Actress", "year": 2015 },
+      { "category": "Best Cinematography", "year": 2015 },
+      { "category": "Best Film Editing", "year": 2015 }
+    ],
+    "note": "Birdman or (The Unexpected Virtue of Ignorance)"
+  },
+  "27578": {
+    "wins": [
+      { "category": "Best Picture", "year": 2010 },
+      { "category": "Best Director", "year": 2010 },
+      { "category": "Best Adapted Screenplay", "year": 2010 },
+      { "category": "Best Film Editing", "year": 2010 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2010 },
+      { "category": "Best Supporting Actress", "year": 2010 },
+      { "category": "Best Cinematography", "year": 2010 },
+      { "category": "Best Original Score", "year": 2010 }
+    ],
+    "note": "The Hurt Locker"
+  },
+  "13972": {
+    "wins": [
+      { "category": "Best Picture", "year": 2008 },
+      { "category": "Best Director", "year": 2008 },
+      { "category": "Best Supporting Actor", "year": 2008 },
+      { "category": "Best Adapted Screenplay", "year": 2008 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2008 },
+      { "category": "Best Supporting Actress", "year": 2008 },
+      { "category": "Best Cinematography", "year": 2008 },
+      { "category": "Best Film Editing", "year": 2008 }
+    ],
+    "note": "No Country for Old Men"
+  },
+  "1422": {
+    "wins": [
+      { "category": "Best Picture", "year": 2007 },
+      { "category": "Best Director", "year": 2007 },
+      { "category": "Best Actress", "year": 2007 },
+      { "category": "Best Supporting Actor", "year": 2007 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2007 },
+      { "category": "Best Supporting Actress", "year": 2007 },
+      { "category": "Best Original Screenplay", "year": 2007 }
+    ],
+    "note": "The Departed"
+  },
+  "416": {
+    "wins": [
+      { "category": "Best Picture", "year": 2006 },
+      { "category": "Best Director", "year": 2006 },
+      { "category": "Best Original Screenplay", "year": 2006 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2006 },
+      { "category": "Best Supporting Actor", "year": 2006 },
+      { "category": "Best Supporting Actress", "year": 2006 },
+      { "category": "Best Film Editing", "year": 2006 }
+    ],
+    "note": "Crash"
+  },
+  "98": {
+    "wins": [
+      { "category": "Best Picture", "year": 2001 },
+      { "category": "Best Director", "year": 2001 },
+      { "category": "Best Actor", "year": 2001 },
+      { "category": "Best Adapted Screenplay", "year": 2001 },
+      { "category": "Best Film Editing", "year": 2001 }
+    ],
+    "nominations": [
+      { "category": "Best Supporting Actor", "year": 2001 },
+      { "category": "Best Supporting Actress", "year": 2001 },
+      { "category": "Best Cinematography", "year": 2001 }
+    ],
+    "note": "Gladiator"
+  },
+  "694": {
+    "wins": [
+      { "category": "Best Picture", "year": 2004 },
+      { "category": "Best Director", "year": 2004 },
+      { "category": "Best Actress", "year": 2004 },
+      { "category": "Best Supporting Actor", "year": 2004 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2004 },
+      { "category": "Best Supporting Actress", "year": 2004 },
+      { "category": "Best Original Screenplay", "year": 2004 }
+    ],
+    "note": "Million Dollar Baby"
+  },
+  "120": {
+    "wins": [
+      { "category": "Best Picture", "year": 2004 },
+      { "category": "Best Director", "year": 2004 },
+      { "category": "Best Visual Effects", "year": 2004 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2004 },
+      { "category": "Best Supporting Actor", "year": 2004 },
+      { "category": "Best Adapted Screenplay", "year": 2004 },
+      { "category": "Best Cinematography", "year": 2004 },
+      { "category": "Best Film Editing", "year": 2004 },
+      { "category": "Best Makeup", "year": 2004 },
+      { "category": "Best Original Score", "year": 2004 },
+      { "category": "Best Sound Mixing", "year": 2004 }
+    ],
+    "note": "The Lord of the Rings: The Return of the King"
+  },
+  "122": {
+    "wins": [
+      { "category": "Best Picture", "year": 2004 },
+      { "category": "Best Director", "year": 2004 },
+      { "category": "Best Visual Effects", "year": 2004 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2004 },
+      { "category": "Best Supporting Actor", "year": 2004 },
+      { "category": "Best Adapted Screenplay", "year": 2004 },
+      { "category": "Best Cinematography", "year": 2004 },
+      { "category": "Best Film Editing", "year": 2004 },
+      { "category": "Best Makeup", "year": 2004 },
+      { "category": "Best Original Score", "year": 2004 },
+      { "category": "Best Sound Mixing", "year": 2004 }
+    ],
+    "note": "The Lord of the Rings: The Two Towers"
+  },
+  "121": {
+    "wins": [
+      { "category": "Best Cinematography", "year": 2002 },
+      { "category": "Best Makeup", "year": 2002 },
+      { "category": "Best Original Score", "year": 2002 },
+      { "category": "Best Visual Effects", "year": 2002 }
+    ],
+    "nominations": [
+      { "category": "Best Picture", "year": 2002 },
+      { "category": "Best Director", "year": 2002 },
+      { "category": "Best Supporting Actor", "year": 2002 },
+      { "category": "Best Adapted Screenplay", "year": 2002 },
+      { "category": "Best Art Direction", "year": 2002 },
+      { "category": "Best Costume Design", "year": 2002 },
+      { "category": "Best Film Editing", "year": 2002 },
+      { "category": "Best Original Song", "year": 2002 },
+      { "category": "Best Sound", "year": 2002 }
+    ],
+    "note": "The Lord of the Rings: The Fellowship of the Ring"
+  },
+  "597": {
+    "wins": [
+      { "category": "Best Picture", "year": 1998 },
+      { "category": "Best Director", "year": 1998 },
+      { "category": "Best Actress", "year": 1998 },
+      { "category": "Best Cinematography", "year": 1998 },
+      { "category": "Best Film Editing", "year": 1998 },
+      { "category": "Best Original Dramatic Score", "year": 1998 },
+      { "category": "Best Original Song", "year": 1998 },
+      { "category": "Best Sound", "year": 1998 },
+      { "category": "Best Sound Effects Editing", "year": 1998 },
+      { "category": "Best Visual Effects", "year": 1998 },
+      { "category": "Best Costume Design", "year": 1998 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 1998 },
+      { "category": "Best Supporting Actress", "year": 1998 },
+      { "category": "Best Makeup", "year": 1998 }
+    ],
+    "note": "Titanic (duplicate ID, same as 197)"
+  },
+  "11": {
+    "wins": [
+      { "category": "Best Picture", "year": 1978 },
+      { "category": "Best Director", "year": 1978 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 1978 },
+      { "category": "Best Supporting Actor", "year": 1978 },
+      { "category": "Best Supporting Actress", "year": 1978 },
+      { "category": "Best Cinematography", "year": 1978 }
+    ],
+    "note": "Star Wars"
+  },
+  "671": {
+    "wins": [
+      { "category": "Best Picture", "year": 1991 },
+      { "category": "Best Director", "year": 1991 },
+      { "category": "Best Actor", "year": 1991 },
+      { "category": "Best Actress", "year": 1991 },
+      { "category": "Best Adapted Screenplay", "year": 1991 }
+    ],
+    "nominations": [
+      { "category": "Best Cinematography", "year": 1991 },
+      { "category": "Best Film Editing", "year": 1991 },
+      { "category": "Best Sound", "year": 1991 }
+    ],
+    "note": "The Silence of the Lambs (duplicate, same as 389)"
+  },
+  "73": {
+    "wins": [
+      { "category": "Best Picture", "year": 2003 },
+      { "category": "Best Director", "year": 2003 },
+      { "category": "Best Original Screenplay", "year": 2003 }
+    ],
+    "nominations": [
+      { "category": "Best Actor", "year": 2003 },
+      { "category": "Best Supporting Actor", "year": 2003 },
+      { "category": "Best Supporting Actress", "year": 2003 },
+      { "category": "Best Film Editing", "year": 2003 }
+    ],
+    "note": "American Beauty"
+  },
+  "914": {
+    "wins": [
+      { "category": "Best Picture", "year": 1997 },
+      { "category": "Best Director", "year": 1997 },
+      { "category": "Best Actor", "year": 1997 },
+      { "category": "Best Supporting Actress", "year": 1997 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 1997 },
+      { "category": "Best Supporting Actor", "year": 1997 },
+      { "category": "Best Original Screenplay", "year": 1997 }
+    ],
+    "note": "The English Patient"
+  },
+  "329": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2004 },
+      { "category": "Best Original Score", "year": 2004 }
+    ],
+    "nominations": [
+      { "category": "Best Sound Editing", "year": 2004 },
+      { "category": "Best Original Screenplay", "year": 2004 }
+    ],
+    "note": "The Incredibles"
+  },
+  "585": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2012 }
+    ],
+    "nominations": [],
+    "note": "Monsters, Inc."
+  },
+  "150540": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2016 },
+      { "category": "Best Original Song", "year": 2016 }
+    ],
+    "nominations": [],
+    "note": "Inside Out"
+  },
+  "354912": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2018 },
+      { "category": "Best Original Song", "year": 2018 }
+    ],
+    "nominations": [],
+    "note": "Coco"
+  },
+  "508442": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2021 },
+      { "category": "Best Original Score", "year": 2021 }
+    ],
+    "nominations": [],
+    "note": "Soul"
+  },
+  "438148": {
+    "wins": [
+      { "category": "Best Animated Feature", "year": 2022 }
+    ],
+    "nominations": [],
+    "note": "Encanto"
+  },
+  "1891": {
+    "wins": [
+      { "category": "Best Picture", "year": 1997 },
+      { "category": "Best Director", "year": 1997 },
+      { "category": "Best Actor", "year": 1997 },
+      { "category": "Best Supporting Actor", "year": 1997 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 1997 },
+      { "category": "Best Supporting Actress", "year": 1997 },
+      { "category": "Best Original Screenplay", "year": 1997 }
+    ],
+    "note": "The English Patient"
+  },
+  "769": {
+    "wins": [
+      { "category": "Best Picture", "year": 1990 },
+      { "category": "Best Director", "year": 1990 },
+      { "category": "Best Actor", "year": 1990 },
+      { "category": "Best Supporting Actor", "year": 1990 }
+    ],
+    "nominations": [
+      { "category": "Best Actress", "year": 1990 },
+      { "category": "Best Supporting Actress", "year": 1990 }
+    ],
+    "note": "GoodFellas"
+  }
+}

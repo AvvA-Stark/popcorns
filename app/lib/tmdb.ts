@@ -941,9 +941,7 @@ class TMDBClient {
 
   /**
    * Fetch movie awards data (with caching)
-   * Note: TMDB doesn't have a native /awards endpoint
-   * This is a placeholder that can be extended with external awards APIs
-   * or static Oscar winner datasets
+   * Uses static Oscar dataset (data/oscar_winners.json)
    * 
    * @param movieId - The movie ID
    * @returns Awards data with wins and nominations
@@ -958,23 +956,43 @@ class TMDBClient {
         return cached;
       }
 
-      // Cache miss - fetch from external source or static data
+      // Cache miss - load from static Oscar dataset
       console.log(`🌐 Cache MISS: Fetching awards ${movieId}`);
       
-      // TODO: Integrate with external awards API or static Oscar dataset
-      // For now, return empty awards data
-      // Possible integrations:
-      // - OMDb API (has awards data but requires separate API key)
-      // - Static JSON file with Oscar winners by TMDB ID
-      // - TMDb "keywords" endpoint might contain some award info
+      // Import static Oscar winners dataset
+      const oscarData = require('../data/oscar_winners.json');
+      const movieIdStr = String(movieId);
       
-      const awardsData: AwardsData = {
-        wins: [],
-        nominations: [],
-      };
+      // Check if this movie has Oscar data
+      let awardsData: AwardsData;
+      if (oscarData[movieIdStr]) {
+        // Movie found in dataset - map to Award interface
+        const movieAwards = oscarData[movieIdStr];
+        awardsData = {
+          wins: movieAwards.wins.map((w: any) => ({
+            award: 'Academy Award (Oscar)',
+            category: w.category,
+            won: true,
+            year: w.year,
+          })),
+          nominations: movieAwards.nominations.map((n: any) => ({
+            award: 'Academy Award (Oscar)',
+            category: n.category,
+            won: false,
+            year: n.year,
+          })),
+        };
+        console.log(`🏆 Found ${awardsData.wins.length} Oscar wins for movie ${movieId}`);
+      } else {
+        // Movie not in dataset - return empty
+        awardsData = {
+          wins: [],
+          nominations: [],
+        };
+      }
       
-      // Cache the result (7 days - awards don't change)
-      await setCached(cacheKey, awardsData, CacheTTL.WATCH_PROVIDERS);
+      // Cache the result (30 days - awards don't change)
+      await setCached(cacheKey, awardsData, CacheTTL.WATCH_PROVIDERS * 4);
       
       return awardsData;
     } catch (error) {

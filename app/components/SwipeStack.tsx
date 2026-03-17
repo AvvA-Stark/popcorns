@@ -4,7 +4,7 @@
  * Uses react-native-gesture-handler and react-native-reanimated
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  withSequence,
   runOnJS,
   interpolate,
   Extrapolation,
@@ -33,6 +34,7 @@ interface SwipeStackProps {
   onSwipeLeft?: (item: Movie | TVSeries) => void;
   onSwipeRight?: (item: Movie | TVSeries) => void;
   onSwipeUp?: (item: Movie | TVSeries) => void;
+  shakeOnMount?: boolean; // Trigger a small shake on the top card when true
 }
 
 export default function SwipeStack({
@@ -43,7 +45,21 @@ export default function SwipeStack({
 }: SwipeStackProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const shakeX = useSharedValue(0);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Shake effect on mount
+  useEffect(() => {
+    if (shakeOnMount) {
+      shakeX.value = withSequence(
+        withTiming(6, { duration: 100 }),
+        withTiming(-6, { duration: 100 }),
+        withTiming(6, { duration: 100 }),
+        withTiming(-6, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+    }
+  }, [shakeOnMount]);
 
   const handleSwipeComplete = useCallback((direction: 'left' | 'right' | 'up') => {
     const currentMovie = movies[currentIndex];
@@ -200,7 +216,7 @@ function SwipeCard({
 
     return {
       transform: [
-        { translateX: translateX.value },
+        { translateX: translateX.value + shakeX.value },
         { translateY: translateY.value },
         { rotate: `${rotation}deg` },
       ],

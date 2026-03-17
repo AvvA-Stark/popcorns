@@ -59,7 +59,7 @@ export const renderPopcornRating = (rating: number, size: number = 16): React.Re
   }
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: -8 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: -11 }}>
       {popcorns}
     </View>
   );

@@ -3,6 +3,7 @@
  * Displays a movie in the user's watchlist with delete option
  */
 
+import { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -28,6 +29,7 @@ interface WatchlistCardProps {
 
 export default function WatchlistCard({ item: movie, onRemove: onDelete }: WatchlistCardProps) {
   const router = useRouter();
+  const swipeableRef = useRef<Swipeable>(null);
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -69,9 +71,11 @@ export default function WatchlistCard({ item: movie, onRemove: onDelete }: Watch
 
   return (
     <Swipeable
+      ref={swipeableRef}
       renderRightActions={renderRightActions}
       overshootRight={false}
       friction={2}
+      enableTrackpadTwoFingerGesture={false}
     >
       <Animated.View style={[styles.card, animatedStyle]}>
         <Pressable

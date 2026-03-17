@@ -87,20 +87,22 @@ export async function removeFromWatchlist(id: number, mediaType: MediaType = 'mo
     await AsyncStorage.setItem(WATCHLIST_KEY, JSON.stringify(updatedWatchlist));
     console.log(`🗑️ Removed ${mediaType} ${id} from watchlist`);
     
-    // Auto-sync to Supabase (delete from remote)
+    // Auto-sync to Supabase (delete from remote) - await to prevent race conditions
     if (isSupabaseAvailable()) {
-      const deviceId = await getDeviceId();
-      supabase!
-        .from('watchlist')
-        .delete()
-        .eq('user_id', deviceId)
-        .eq('movie_id', id)
-        .eq('media_type', mediaType)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Background delete sync failed:', error);
-          }
-        });
+      try {
+        const deviceId = await getDeviceId();
+        const { error } = await supabase!
+          .from('watchlist')
+          .delete()
+          .eq('user_id', deviceId)
+          .eq('movie_id', id)
+          .eq('media_type', mediaType);
+        if (error) {
+          console.error('Supabase delete failed:', error);
+        }
+      } catch (err) {
+        console.error('Error during Supabase delete:', err);
+      }
     }
   } catch (error) {
     console.error('Error removing from watchlist:', error);

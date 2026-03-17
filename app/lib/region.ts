@@ -93,6 +93,8 @@ export async function setRegionOverride(code: string): Promise<void> {
     await AsyncStorage.setItem(REGION_OVERRIDE_KEY, upperCode);
     cachedRegion = upperCode; // Update cache immediately
     console.log(`[Region Detection] Manual override set: ${upperCode}`);
+    // Notify listeners about region change
+    emitRegionChange(cachedRegion);
   } catch (error) {
     console.error('[Region Detection] Failed to save region override:', error);
     throw error;
@@ -107,8 +109,57 @@ export async function clearRegionOverride(): Promise<void> {
     await AsyncStorage.removeItem(REGION_OVERRIDE_KEY);
     cachedRegion = null; // Clear cache to force re-detection
     console.log('[Region Detection] Manual override cleared, will auto-detect on next call');
+    emitRegionChange(cachedRegion); // emit with potentially new region after re-detect? Actually cache is null, but we can emit the eventual region? Better emit the cleared state? We'll let listeners fetch via getRegion if needed.
   } catch (error) {
     console.error('[Region Detection] Failed to clear region override:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// REGION CHANGE EVENT EMITTER
+// ============================================================================
+// Allows UI to react to region changes in real-time
+
+type RegionChangeListener = (region: string) => void;
+const regionListeners: RegionChangeListener[] = [];
+
+/**
+ * Subscribe to region change events.
+ * Returns an unsubscribe function.
+ */
+export function onRegionChange(listener: RegionChangeListener): () => void {
+  regionListeners.push(listener);
+  return () => {
+    const index = regionListeners.indexOf(listener);
+    if (index !== -1) {
+      regionListeners.splice(index, 1);
+    }
+  };
+}
+
+function emitRegionChange(region: string | null): void {
+  if (region !== null) {
+    regionListeners.forEach(listener => {
+      try {
+        listener(region);
+      } catch (err) {
+        console.error('Error in region change listener:', err);
+      }
+    });
+  }
+}
+
+// Modify setRegionOverride to emit after updating
+export async function setRegionOverride(code: string): Promise<void> {
+  try {
+    const upperCode = code.toUpperCase();
+    await AsyncStorage.setItem(REGION_OVERRIDE_KEY, upperCode);
+    cachedRegion = upperCode; // Update cache immediately
+    console.log(`[Region Detection] Manual override set: ${upperCode}`);
+    emitRegionChange(cachedRegion);
+  } catch (error) {
+    console.error('[Region Detection] Failed to save region override:', error);
     throw error;
   }
 }

@@ -29,6 +29,7 @@ import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
 import SwipeTutorialOverlay from '../../components/SwipeTutorialOverlay';
+import { trackPass, trackLike, trackSuperLike, updateGenreNames } from '../../utils/stats';
 
 interface Filters {
   genres: number[];
@@ -78,6 +79,13 @@ export default function DiscoveryScreen() {
     try {
       const genreList = await tmdb.getGenres();
       setGenres(genreList);
+      
+      // Update genre names in stats
+      const genreMap: { [id: number]: string } = {};
+      genreList.forEach(genre => {
+        genreMap[genre.id] = genre.name;
+      });
+      await updateGenreNames(genreMap);
     } catch (error) {
       console.error('Error loading genres:', error);
     } finally {
@@ -295,9 +303,13 @@ export default function DiscoveryScreen() {
     }
   };
 
-  const handleSwipeLeft = (item: Movie | TVSeries) => {
+  const handleSwipeLeft = async (item: Movie | TVSeries) => {
     const movie = item as Movie;
     console.log('👎 Disliked:', movie.title);
+    
+    // Track stats
+    await trackPass();
+    
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
     checkIfNeedMoreMovies(newCount);
@@ -306,6 +318,10 @@ export default function DiscoveryScreen() {
   const handleSwipeRight = async (item: Movie | TVSeries) => {
     const movie = item as Movie;
     console.log('❤️ Liked:', movie.title);
+    
+    // Track stats
+    await trackLike(movie);
+    
     try {
       await addToWatchlist(movie, 'normal', 'movie');
       showToast({ 
@@ -327,6 +343,10 @@ export default function DiscoveryScreen() {
   const handleSwipeUp = async (item: Movie | TVSeries) => {
     const movie = item as Movie;
     console.log('⭐ Super Liked:', movie.title);
+    
+    // Track stats
+    await trackSuperLike(movie);
+    
     try {
       await addToWatchlist(movie, 'super', 'movie');
       showToast({ 
@@ -505,7 +525,7 @@ export default function DiscoveryScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View key={region} style={styles.container}>
       {/* Sticky header - always visible at top */}
       <View style={styles.stickyHeader}>
         <View style={styles.titleRow}>

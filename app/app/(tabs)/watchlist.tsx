@@ -64,8 +64,8 @@ export default function WatchlistScreen() {
 
     const performDelete = async () => {
       try {
-        await removeFromWatchlist(movieId);
-        setWatchlist(prev => prev.filter(item => item.id !== movieId));
+        await removeFromWatchlist(movieId, movie.mediaType);
+        setWatchlist(prev => prev.filter(item => !(item.id === movieId && item.mediaType === movie.mediaType)));
         showToast({ 
           message: `Removed "${movie.title}" from watchlist`, 
           type: 'info' 
@@ -185,8 +185,8 @@ export default function WatchlistScreen() {
             tintColor={Colors.primary}
           />
         }
-        // Performance optimizations
-        removeClippedSubviews={true}
+        // Performance optimizations (removeClippedSubviews disabled to fix swipe gesture)
+        removeClippedSubviews={false}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         windowSize={10}

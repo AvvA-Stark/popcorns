@@ -29,6 +29,7 @@ import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
 import SwipeTutorialOverlay from '../../components/SwipeTutorialOverlay';
+import { trackPass, trackLike, trackSuperLike, updateGenreNames } from '../../utils/stats';
 
 interface Filters {
   genres: number[];
@@ -78,6 +79,13 @@ export default function SeriesScreen() {
     try {
       const genreList = await tmdb.getTVGenres();
       setGenres(genreList);
+      
+      // Update genre names in stats
+      const genreMap: { [id: number]: string } = {};
+      genreList.forEach(genre => {
+        genreMap[genre.id] = genre.name;
+      });
+      await updateGenreNames(genreMap);
     } catch (error) {
       console.error('Error loading TV genres:', error);
     } finally {
@@ -295,9 +303,13 @@ export default function SeriesScreen() {
     }
   };
 
-  const handleSwipeLeft = (item: Movie | TVSeries) => {
+  const handleSwipeLeft = async (item: Movie | TVSeries) => {
     const show = item as TVSeries;
     console.log('👎 Disliked:', show.name);
+    
+    // Track stats
+    await trackPass();
+    
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
     checkIfNeedMoreSeries(newCount);
@@ -306,6 +318,10 @@ export default function SeriesScreen() {
   const handleSwipeRight = async (item: Movie | TVSeries) => {
     const show = item as TVSeries;
     console.log('❤️ Liked:', show.name);
+    
+    // Track stats
+    await trackLike(show);
+    
     try {
       await addToWatchlist(show, 'normal', 'tv');
       showToast({ 
@@ -327,6 +343,10 @@ export default function SeriesScreen() {
   const handleSwipeUp = async (item: Movie | TVSeries) => {
     const show = item as TVSeries;
     console.log('⭐ Super Liked:', show.name);
+    
+    // Track stats
+    await trackSuperLike(show);
+    
     try {
       await addToWatchlist(show, 'super', 'tv');
       showToast({ 
@@ -505,7 +525,7 @@ export default function SeriesScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View key={region} style={styles.container}>
       {/* Sticky header - always visible at top */}
       <View style={styles.stickyHeader}>
         <View style={styles.titleRow}>

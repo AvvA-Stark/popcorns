@@ -54,6 +54,7 @@ export function logSupabaseStatus(): void {
 /**
  * Database schema for reference:
  * 
+ * -- WATCHLIST TABLE
  * CREATE TABLE watchlist (
  *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
  *   user_id TEXT NOT NULL,
@@ -69,12 +70,29 @@ export function logSupabaseStatus(): void {
  *   UNIQUE(user_id, movie_id, media_type)
  * );
  * 
+ * -- REVIEWS TABLE
+ * CREATE TABLE reviews (
+ *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ *   movie_id INTEGER NOT NULL,
+ *   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 10),
+ *   text TEXT,
+ *   user_id TEXT NOT NULL,
+ *   created_at TIMESTAMPTZ DEFAULT NOW(),
+ *   updated_at TIMESTAMPTZ DEFAULT NOW()
+ * );
+ * 
  * -- Enable Row Level Security
  * ALTER TABLE watchlist ENABLE ROW LEVEL SECURITY;
+ * ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
  * 
- * -- Create policy to allow all operations (since we're using device IDs, not auth)
+ * -- Create policies to allow all operations (since we're using device IDs, not auth)
  * CREATE POLICY "Enable all access for all users" ON watchlist FOR ALL USING (true);
+ * CREATE POLICY "Enable all access for all users" ON reviews FOR ALL USING (true);
  * 
- * -- Create index for faster queries
+ * -- Create indexes for faster queries
  * CREATE INDEX idx_watchlist_user_id ON watchlist(user_id);
+ * CREATE INDEX idx_reviews_movie_id ON reviews(movie_id);
+ * CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+ * 
+ * -- See supabase/migrations/ for full migration scripts
  */

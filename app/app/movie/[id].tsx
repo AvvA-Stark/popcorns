@@ -29,6 +29,8 @@ import { useRegion } from '../../context/RegionContext';
 import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../../lib/watchlist';
 import { renderPopcornRating } from '../../utils/popcornRating';
 import syntheticReviews from '../../data/movie_reviews.json';
+import { supabase, isSupabaseAvailable } from '../../lib/supabase';
+import { getDeviceId } from '../../lib/deviceId';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CAST_IMAGE_SIZE = 80;
@@ -38,6 +40,7 @@ interface UserReview {
   rating: number; // 1-10
   text: string;
   date: string;
+  userId?: string; // Device ID of the reviewer
 }
 
 const PROVIDER_HOMEPAGE_URLS: Record<string, string> = {
@@ -134,6 +137,7 @@ export default function MovieDetailScreen() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Similar Movies state
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
@@ -146,8 +150,18 @@ export default function MovieDetailScreen() {
   useEffect(() => {
     loadMovieDetails();
     checkWatchlistStatus();
+    initializeUser();
     loadReviews();
   }, [id]);
+
+  const initializeUser = async () => {
+    try {
+      const userId = await getDeviceId();
+      setCurrentUserId(userId);
+    } catch (err) {
+      console.error('Error getting device ID:', err);
+    }
+  };
 
   // Load similar movies after movie details are available
   useEffect(() => {
@@ -203,14 +217,63 @@ export default function MovieDetailScreen() {
 
   const loadReviews = async () => {
     try {
-      // Load real user reviews from AsyncStorage
-      const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
       let realUserReviews: UserReview[] = [];
       
-      if (reviewsJson) {
-        const allReviews: UserReview[] = JSON.parse(reviewsJson);
-        // Filter reviews for this movie
-        realUserReviews = allReviews.filter(r => r.movieId === Number(id));
+      // Try to load from Supabase first (if available)
+      if (isSupabaseAvailable() && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('movie_id', Number(id))
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            console.error('Supabase error loading reviews:', error);
+            // Fall back to AsyncStorage
+            throw error;
+          }
+          
+          if (data) {
+            // Convert Supabase format to UserReview format
+            realUserReviews = data.map((review: any) => ({
+              movieId: review.movie_id,
+              rating: review.rating,
+              text: review.text || '',
+              date: review.created_at,
+              userId: review.user_id,
+            }));
+            
+            // Also cache in AsyncStorage for offline access
+            const cacheKey = `@popcorns_reviews_cache_${id}`;
+            await AsyncStorage.setItem(cacheKey, JSON.stringify(realUserReviews));
+            
+            console.log(`✅ Loaded ${realUserReviews.length} reviews from Supabase for movie ${id}`);
+          }
+        } catch (supabaseErr) {
+          console.warn('Falling back to AsyncStorage:', supabaseErr);
+          // Fall through to AsyncStorage fallback
+        }
+      }
+      
+      // Fallback: Load from AsyncStorage cache or legacy storage
+      if (realUserReviews.length === 0) {
+        // Try cache first
+        const cacheKey = `@popcorns_reviews_cache_${id}`;
+        const cachedReviews = await AsyncStorage.getItem(cacheKey);
+        
+        if (cachedReviews) {
+          realUserReviews = JSON.parse(cachedReviews);
+          console.log(`📦 Loaded ${realUserReviews.length} reviews from cache for movie ${id}`);
+        } else {
+          // Legacy fallback: Load from old AsyncStorage format
+          const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
+          if (reviewsJson) {
+            const allReviews: UserReview[] = JSON.parse(reviewsJson);
+            realUserReviews = allReviews.filter(r => r.movieId === Number(id));
+            console.log(`📦 Loaded ${realUserReviews.length} reviews from legacy storage for movie ${id}`);
+          }
+        }
       }
       
       // Load synthetic reviews for this movie
@@ -225,8 +288,8 @@ export default function MovieDetailScreen() {
         date: review.created_at,
       }));
       
-      // Combine: synthetic reviews first, then real user reviews
-      const combinedReviews = [...convertedSyntheticReviews, ...realUserReviews];
+      // Combine: real user reviews first, then synthetic reviews
+      const combinedReviews = [...realUserReviews, ...convertedSyntheticReviews];
       
       // Sort by date descending (newest first)
       combinedReviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -238,7 +301,14 @@ export default function MovieDetailScreen() {
   };
 
   const saveReview = async () => {
-    if (!movie) return;
+    if (!movie || !currentUserId) {
+      Alert.alert(
+        t('movieDetail.error'),
+        'Unable to save review. Please try again.',
+        [{ text: t('common.ok'), style: 'default' }]
+      );
+      return;
+    }
 
     const trimmedText = reviewText.trim();
     
@@ -264,18 +334,52 @@ export default function MovieDetailScreen() {
     }
 
     try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const newReview = {
+        movie_id: movie.id,
+        rating: reviewRating,
+        text: trimmedText,
+        user_id: currentUserId,
+      };
+
+      // Try to save to Supabase first
+      if (isSupabaseAvailable() && supabase) {
+        try {
+          const { error } = await supabase
+            .from('reviews')
+            .insert([newReview]);
+
+          if (error) {
+            console.error('Supabase error saving review:', error);
+            throw error;
+          }
+
+          console.log('✅ Review saved to Supabase');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (supabaseErr) {
+          console.error('Failed to save to Supabase, falling back to local storage:', supabaseErr);
+          // Fall through to AsyncStorage fallback
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          Alert.alert(
+            t('movieDetail.warning'),
+            'Review saved locally. Cloud sync unavailable.',
+            [{ text: t('common.ok'), style: 'default' }]
+          );
+        }
+      }
+
+      // Always save to AsyncStorage as cache/fallback
       const reviewsJson = await AsyncStorage.getItem('@popcorns_reviews');
       let allReviews: UserReview[] = reviewsJson ? JSON.parse(reviewsJson) : [];
 
-      const newReview: UserReview = {
+      const localReview: UserReview = {
         movieId: movie.id,
         rating: reviewRating,
         text: trimmedText,
         date: new Date().toISOString(),
+        userId: currentUserId,
       };
 
-      allReviews.push(newReview);
+      allReviews.push(localReview);
       await AsyncStorage.setItem('@popcorns_reviews', JSON.stringify(allReviews));
       
       // Reload reviews for this movie
@@ -287,6 +391,12 @@ export default function MovieDetailScreen() {
       setShowReviewForm(false);
     } catch (err) {
       console.error('Error saving review:', err);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        t('movieDetail.error'),
+        'Failed to save review. Please try again.',
+        [{ text: t('common.ok'), style: 'default' }]
+      );
     }
   };
 
@@ -781,20 +891,32 @@ export default function MovieDetailScreen() {
             {/* Display Reviews */}
             {reviews.length > 0 ? (
               <View style={styles.reviewsList}>
-                {reviews.map((review, index) => (
-                  <View key={index} style={styles.reviewCard}>
-                    <View style={styles.reviewHeader}>
-                      {renderStars(review.rating, 14)}
-                      <Text style={styles.reviewRating}>{review.rating}/10</Text>
-                      <Text style={styles.reviewDate}>
-                        {new Date(review.date).toLocaleDateString()}
-                      </Text>
+                {reviews.map((review, index) => {
+                  const isYourReview = review.userId && currentUserId && review.userId === currentUserId;
+                  
+                  return (
+                    <View key={index} style={[
+                      styles.reviewCard,
+                      isYourReview && styles.yourReviewCard
+                    ]}>
+                      <View style={styles.reviewHeader}>
+                        {renderStars(review.rating, 14)}
+                        <Text style={styles.reviewRating}>{review.rating}/10</Text>
+                        {isYourReview && (
+                          <View style={styles.yourReviewBadge}>
+                            <Text style={styles.yourReviewBadgeText}>{t('movieDetail.yourReview')}</Text>
+                          </View>
+                        )}
+                        <Text style={styles.reviewDate}>
+                          {new Date(review.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      {review.text && (
+                        <Text style={styles.reviewText}>{review.text}</Text>
+                      )}
                     </View>
-                    {review.text && (
-                      <Text style={styles.reviewText}>{review.text}</Text>
-                    )}
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             ) : (
               <View style={styles.noReviewsContainer}>
@@ -1296,6 +1418,23 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     gap: 8,
+  },
+  yourReviewCard: {
+    borderWidth: 2,
+    borderColor: Colors.accent,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+  },
+  yourReviewBadge: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  yourReviewBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: Colors.background,
+    textTransform: 'uppercase',
   },
   reviewHeader: {
     flexDirection: 'row',

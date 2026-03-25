@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
 import { getStats, getAccountAge, getAccountCreatedDate, getTopGenres, initializeStats } from '../../utils/stats';
 import { getWatchlistStats } from '../../lib/watchlist';
+import { useToast } from '../../lib/toast';
 import { 
   getSettings, 
   setLanguage, 
@@ -22,9 +23,12 @@ import {
   Region 
 } from '../../utils/settings';
 import { changeLanguage } from '../../lib/i18n';
+import { getCurrentMood, getAllTimeStats, resetRecommendations } from '../../lib/recommendations';
+import { tmdb } from '../../lib/tmdb';
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
+  const { showToast } = useToast();
   const [stats, setStats] = useState({
     totalSwipes: 0,
     likes: 0,
@@ -44,6 +48,16 @@ export default function ProfileScreen() {
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [regionModalVisible, setRegionModalVisible] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [currentMood, setCurrentMood] = useState<{
+    genres: Array<{ name: string; count: number }>;
+    actors: Array<{ name: string; count: number }>;
+    directors: Array<{ name: string; count: number }>;
+  }>({ genres: [], actors: [], directors: [] });
+  const [allTimeFavorites, setAllTimeFavorites] = useState<{
+    genres: Array<{ name: string; count: number }>;
+    actors: Array<{ name: string; count: number }>;
+    directors: Array<{ name: string; count: number }>;
+  }>({ genres: [], actors: [], directors: [] });
 
   const loadStats = async () => {
     try {
@@ -53,6 +67,10 @@ export default function ProfileScreen() {
         getAccountAge(),
         getAccountCreatedDate(),
         getTopGenres(3),
+        getCurrentMood(),
+        getAllTimeStats(),
+        tmdb.getGenres(), // Fetch movie genres
+        tmdb.getTVGenres(), // Fetch TV genres
       ]);
 
       // Extract values, falling back to defaults on error
@@ -61,6 +79,30 @@ export default function ProfileScreen() {
       const accountAge = results[2].status === 'fulfilled' ? results[2].value : 0;
       const createdDate = results[3].status === 'fulfilled' ? results[3].value : null;
       const topGenres = results[4].status === 'fulfilled' ? results[4].value : [];
+      const mood = results[5].status === 'fulfilled' ? results[5].value : { genres: [], actors: [], directors: [] };
+      const allTime = results[6].status === 'fulfilled' ? results[6].value : { genres: [], actors: [], directors: [] };
+      const movieGenres = results[7].status === 'fulfilled' ? results[7].value : [];
+      const tvGenres = results[8].status === 'fulfilled' ? results[8].value : [];
+
+      // Create genre ID to name map
+      const genreMap: { [id: string]: string } = {};
+      [...movieGenres, ...tvGenres].forEach((genre) => {
+        genreMap[String(genre.id)] = genre.name;
+      });
+
+      // Convert genre IDs to names in mood and allTime
+      const convertGenreIds = (data: {
+        genres: Array<{ name: string; count: number }>;
+        actors: Array<{ name: string; count: number }>;
+        directors: Array<{ name: string; count: number }>;
+      }) => ({
+        genres: data.genres.map((g) => ({
+          name: genreMap[g.name] || g.name, // g.name is actually the ID
+          count: g.count,
+        })),
+        actors: data.actors,
+        directors: data.directors,
+      });
 
       setStats({
         totalSwipes: userStats.totalSwipes,
@@ -72,6 +114,9 @@ export default function ProfileScreen() {
         accountCreated: createdDate,
         topGenres,
       });
+
+      setCurrentMood(convertGenreIds(mood));
+      setAllTimeFavorites(convertGenreIds(allTime));
     } catch (error) {
       console.error('Error loading profile stats:', error);
     } finally {
@@ -313,6 +358,70 @@ export default function ProfileScreen() {
                 </View>
               ))}
             </View>
+          </View>
+        )}
+
+        {/* Current Mood Section */}
+        {currentMood.genres.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🔥 Current Mood</Text>
+            <Text style={styles.sectionSubtitle}>What you're into right now (last 30 swipes)</Text>
+            <View style={styles.moodContainer}>
+              {currentMood.genres.slice(0, 5).map((genre, index) => (
+                <View key={`mood-genre-${index}`} style={styles.moodChip}>
+                  <Text style={styles.moodChipText}>
+                    {genre.name} ({genre.count})
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* All-Time Favorites Section */}
+        {allTimeFavorites.genres.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>⭐ All-Time Favorites</Text>
+            <Text style={styles.sectionSubtitle}>Your overall taste profile</Text>
+            <View style={styles.moodContainer}>
+              {allTimeFavorites.genres.slice(0, 5).map((genre, index) => (
+                <View key={`alltime-genre-${index}`} style={styles.moodChip}>
+                  <Text style={styles.moodChipText}>
+                    {genre.name} ({genre.count})
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Reset Preferences Button */}
+        {(currentMood.genres.length > 0 || allTimeFavorites.genres.length > 0) && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={async () => {
+                Alert.alert(
+                  'Reset Preferences',
+                  'This will clear all your swipe history and taste profile. Are you sure?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Reset',
+                      style: 'destructive',
+                      onPress: async () => {
+                        await resetRecommendations();
+                        setCurrentMood({ genres: [], actors: [], directors: [] });
+                        setAllTimeFavorites({ genres: [], actors: [], directors: [] });
+                        showToast({ message: 'Preferences reset successfully', type: 'success' });
+                      },
+                    },
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.resetButtonText}>🧹 Reset Preferences</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -791,5 +900,42 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: Colors.primary,
     fontWeight: 'bold',
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 12,
+    marginTop: -8,
+  },
+  moodContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  moodChip: {
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: Colors.primary + '40',
+  },
+  moodChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  resetButton: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  resetButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textSecondary,
   },
 });

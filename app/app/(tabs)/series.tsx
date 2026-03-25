@@ -33,6 +33,7 @@ import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
 
 import { trackPass, trackLike, trackSuperLike, updateGenreNames } from '../../utils/stats';
+import { trackSwipe, sortByRelevance, hasMinimumSwipeHistory } from '../../lib/recommendations';
 
 interface Filters {
   genres: number[];
@@ -264,6 +265,12 @@ export default function SeriesScreen() {
         setHasMore(true); // Always has more in random mode
       }
 
+      // Apply adaptive recommendations sorting (if enough swipe history)
+      const hasMinHistory = await hasMinimumSwipeHistory();
+      if (hasMinHistory) {
+        seriesData = await sortByRelevance(seriesData);
+      }
+
       if (page === 1) {
         setSeries(seriesData);
         setSwipedCount(0);
@@ -301,6 +308,9 @@ export default function SeriesScreen() {
     // Track stats
     await trackPass();
     
+    // Track for recommendations
+    await trackSwipe(show, 'dislike');
+    
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
     checkIfNeedMoreSeries(newCount);
@@ -312,6 +322,9 @@ export default function SeriesScreen() {
     
     // Track stats
     await trackLike(show);
+    
+    // Track for recommendations
+    await trackSwipe(show, 'like');
     
     try {
       await addToWatchlist(show, 'normal', 'tv');
@@ -337,6 +350,9 @@ export default function SeriesScreen() {
     
     // Track stats
     await trackSuperLike(show);
+    
+    // Track for recommendations
+    await trackSwipe(show, 'superLike');
     
     try {
       await addToWatchlist(show, 'super', 'tv');

@@ -32,6 +32,7 @@ import { useToast } from '../../lib/toast';
 import { useRegion } from '../../context/RegionContext';
 import RangeSlider from '../../components/RangeSlider';
 import { trackPass, trackLike, trackSuperLike, updateGenreNames } from '../../utils/stats';
+import { trackSwipe, sortByRelevance, hasMinimumSwipeHistory } from '../../lib/recommendations';
 
 interface Filters {
   genres: number[];
@@ -267,6 +268,12 @@ export default function DiscoveryScreen() {
         setHasMore(true); // Always has more in random mode
       }
 
+      // Apply adaptive recommendations sorting (if enough swipe history)
+      const hasMinHistory = await hasMinimumSwipeHistory();
+      if (hasMinHistory) {
+        moviesData = await sortByRelevance(moviesData);
+      }
+
       if (page === 1) {
         setMovies(moviesData);
         setSwipedCount(0);
@@ -304,6 +311,9 @@ export default function DiscoveryScreen() {
     // Track stats
     await trackPass();
     
+    // Track for recommendations
+    await trackSwipe(movie, 'dislike');
+    
     const newCount = swipedCount + 1;
     setSwipedCount(newCount);
     checkIfNeedMoreMovies(newCount);
@@ -315,6 +325,9 @@ export default function DiscoveryScreen() {
     
     // Track stats
     await trackLike(movie);
+    
+    // Track for recommendations
+    await trackSwipe(movie, 'like');
     
     try {
       await addToWatchlist(movie, 'normal', 'movie');
@@ -340,6 +353,9 @@ export default function DiscoveryScreen() {
     
     // Track stats
     await trackSuperLike(movie);
+    
+    // Track for recommendations
+    await trackSwipe(movie, 'superLike');
     
     try {
       await addToWatchlist(movie, 'super', 'movie');
